@@ -1,0 +1,28 @@
+# Web & API Framework
+fastapi>=0.110.0
+uvicorn>=0.28.0
+pydantic>=2.6.0
+httpx>=0.27.0
+requests>=2.31.0
+
+# Data Science & Machine Learning
+numpy>=1.26.0
+pandas>=2.2.0
+scikit-learn>=1.4.0
+joblib>=1.3.0
+
+# Computer Vision & Deep Learning
+opencv-python>=4.9.0
+torch>=2.2.0
+torchvision>=0.17.0
+pillow>=10.2.0
+
+# Hardware Acceleration (Optional, for Intel iGPU/NVIDIA/CPU)
+# openvino>=2024.0.0
+
+# Visualization & Reporting
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Testing & Quality Assurance
+pytest>=8.0.0

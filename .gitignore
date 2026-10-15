@@ -1,0 +1,66 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE configurations
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Testing & Type checking
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Local databases & runtime buffers
+edge_offline_buffer.db
+*.db-journal
+*.sqlite3-journal
+
+# Hardware cache files (OpenVINO OpenCL runtime caches)
+data/ov_cache/
+*.cl_cache
+*.blob
+
+# Logs & temporary files
+logs/*.jsonl
+!logs/.gitkeep
+*.log
+kernel.errors.txt
+scratch/
+scratch_*.png
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini

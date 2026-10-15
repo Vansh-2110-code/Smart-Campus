@@ -1,0 +1,102 @@
+{
+  "Statistical Rules & Z-Score": {
+    "precision": 0.9314,
+    "recall": 0.9223,
+    "f1": 0.9268,
+    "roc_auc": 0.9645,
+    "fpr": 0.0018,
+    "fnr": 0.0777,
+    "train_time_sec": 0.001,
+    "latency_ms": 0.221,
+    "cm": [
+      [
+        3790,
+        7
+      ],
+      [
+        8,
+        95
+      ]
+    ]
+  },
+  "Isolation Forest (Standalone)": {
+    "precision": 0.8431,
+    "recall": 0.835,
+    "f1": 0.839,
+    "roc_auc": 0.998,
+    "fpr": 0.0042,
+    "fnr": 0.165,
+    "train_time_sec": 0.464,
+    "latency_ms": 0.009,
+    "cm": [
+      [
+        3781,
+        16
+      ],
+      [
+        17,
+        86
+      ]
+    ]
+  },
+  "One-Class SVM (RBF Kernel)": {
+    "precision": 0.8493,
+    "recall": 0.6019,
+    "f1": 0.7045,
+    "roc_auc": 0.9542,
+    "fpr": 0.0029,
+    "fnr": 0.3981,
+    "train_time_sec": 0.113,
+    "latency_ms": 0.013,
+    "cm": [
+      [
+        3786,
+        11
+      ],
+      [
+        41,
+        62
+      ]
+    ]
+  },
+  "Next-Gen PU Random Forest": {
+    "precision": 0.8889,
+    "recall": 0.932,
+    "f1": 0.91,
+    "roc_auc": 0.9996,
+    "fpr": 0.0032,
+    "fnr": 0.068,
+    "train_time_sec": 0.318,
+    "latency_ms": 0.005,
+    "cm": [
+      [
+        3785,
+        12
+      ],
+      [
+        7,
+        96
+      ]
+    ]
+  },
+  "Hybrid Calibrated Ensemble": {
+    "precision": 0.9273,
+    "recall": 0.9903,
+    "f1": 0.9577,
+    "roc_auc": 0.9992,
+    "fpr": 0.0021,
+    "fnr": 0.0097,
+    "train_time_sec": 0.842,
+    "latency_ms": 0.015,
+    "cm": [
+      [
+        3789,
+        8
+      ],
+      [
+        1,
+        102
+      ]
+    ]
+  }
+}

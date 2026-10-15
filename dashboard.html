@@ -1,0 +1,2557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus Intelligence | Unified Attendance & Security Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #059669;
+      --primary-hover: #047857;
+      --primary-light: #d1fae5;
+      --accent: #10b981;
+      --dark: #064e3b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(5, 150, 105, 0.08), 0 4px 6px -4px rgba(5, 150, 105, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-icon {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    .brand h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+    }
+    .brand span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: block;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge-status::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Layout */
+    main {
+      max-width: 1400px;
+      margin: 1.5rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Stat Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .stat-card .label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .stat-card .value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .stat-card .sub {
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.5rem;
+      background: transparent;
+    }
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      margin-bottom: -2px;
+    }
+    .tab-btn:hover {
+      color: var(--primary);
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Tab Panes */
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Panels & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .btn-sm {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: var(--text-main);
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      background: #fafafa;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      color: var(--dark);
+      background: #f8fafc;
+    }
+    tr:hover td {
+      background: #f1f5f9;
+    }
+
+    /* Status Badges */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .pill-success { background: #d1fae5; color: #065f46; }
+    .pill-warning { background: #fef3c7; color: #92400e; }
+    .pill-danger { background: #fee2e2; color: #991b1b; }
+    .pill-neutral { background: #f1f5f9; color: #475569; }
+
+    /* Result Box */
+    .result-box {
+      margin-top: 1rem;
+      padding: 1.25rem;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+    }
+    .result-box.accept {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+    }
+    .result-box.reject {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+    .result-box.review {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+    .pill-info { background: #e0f2fe; color: #0369a1; }
+
+    /* Micro Progress Bar */
+    .sim-bar-bg {
+      background: #e2e8f0;
+      height: 6px;
+      border-radius: 3px;
+      width: 60px;
+      display: inline-block;
+      vertical-align: middle;
+      overflow: hidden;
+      margin-left: 6px;
+    }
+    .sim-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+    .sim-high { background: #10b981; }
+    .sim-mid { background: #f59e0b; }
+    .sim-low { background: #ef4444; }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-backdrop.active {
+      display: flex;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 12px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);
+      border: 1px solid var(--border);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="header-content">
+      <div class="brand">
+        <div class="brand-icon">🏛</div>
+        <div>
+          <h1>Smart Campus Intelligence</h1>
+          <span>Unified Attendance & Irregularity Flagging Console</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="badge-status">System Operational</span>
+        <span id="openvino-badge" class="badge-status" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;" title="Intel OpenVINO Deep Learning Optimization">
+          ⚡ OpenVINO Active
+        </span>
+        <a href="/docs" target="_blank" class="btn btn-outline btn-sm">API Docs (Swagger)</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main>
+
+    <!-- Stat Metric Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="label">Classroom Presence</span>
+        <span class="value" id="stat-in-room">0</span>
+        <span class="sub" id="stat-session-name">CS101 (Period 1)</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Total Daily Gate Scans</span>
+        <span class="value" id="stat-total-scans">13,420</span>
+        <span class="sub">Perimeter & Facility Readers</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">1:1 Classroom Verifications</span>
+        <span class="value" style="color: var(--primary);" id="stat-log-count">0</span>
+        <span class="sub" id="stat-log-sub">0 Accepted / Unlocked</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Teacher Review Queue</span>
+        <span class="value" id="stat-review-count">0</span>
+        <span class="sub">Borderline / Lighting Occlusions</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">High Confidence Breaches</span>
+        <span class="value" style="color: var(--danger);" id="stat-breach-count">0</span>
+        <span class="sub">Curfew / Buddy-Punching</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-attendance')">
+        🎓 1. Classroom Attendance & Presence
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-verification')">
+        🚪 2. Door 1:1 Face Verification Simulator
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-secops')">
+        🚨 3. Gate Irregularity & Curfew Wall
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-review')">
+        📋 4. Teacher Manual Review Queue
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-logs')">
+        📜 5. Classroom Entry & 1:1 Verification Logs
+      </button>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: CLASSROOM ATTENDANCE & PRESENCE (BACK-TO-BACK CLASSES)  -->
+    <!-- ============================================================== -->
+    <div id="tab-attendance" class="tab-pane active">
+      <div class="grid-2">
+        
+        <!-- Active Session Controls -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📖 Active Timetable Session</h2>
+            <span class="pill pill-success" id="session-badge">Period 1 Active</span>
+          </div>
+          <div style="margin-bottom: 1.25rem;">
+            <p style="font-size: 0.95rem; margin-bottom: 0.35rem;">
+              <strong>Course:</strong> <span id="course-title">Computer Science 101</span>
+            </p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+              <strong>Classroom:</strong> <span id="room-title">Lecture Hall A (hall_a)</span> | <strong>Teacher:</strong> Dr. Alan Turing
+            </p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              <strong>Window:</strong> <span id="time-window">09:00:00 - 09:50:00</span> (Grace: 10 mins)
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="advancePeriod()">
+              ⏩ Advance to Next Period (Carry-Over In-Room)
+            </button>
+            <button class="btn btn-outline" onclick="runPassiveAudit()">
+              📷 Trigger WP 7 Passive Roster Audit
+            </button>
+            <button class="btn btn-outline" onclick="exportAttendanceCSV()" title="Download verified roster report as CSV">
+              📥 Export Attendance (CSV)
+            </button>
+          </div>
+
+          <div id="audit-alert" style="margin-top: 1rem; display: none;" class="result-box"></div>
+        </div>
+
+        <!-- Room Capacity Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📊 Session Attendance Breakdown</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadPresenceState()">🔄 Refresh</button>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="background: #ecfdf5; padding: 1rem; border-radius: 8px;">
+              <span style="font-size: 0.8rem; color: #065f46;">Present (On-Time / Carry)</span>
+              <h3 style="font-size: 1.6rem; color: #065f46;" id="count-present">0</h3>
+            </div>
+            <div style="background: #fef3c7; padding: 1rem; border-radius: 8px;">
+              <span style="font-size: 0.8rem; color: #92400e;">Late (After Grace Window)</span>
+              <h3 style="font-size: 1.6rem; color: #92400e;" id="count-late">0</h3>
+            </div>
+            <div style="background: #eff6ff; padding: 1rem; border-radius: 8px;">
+              <span style="font-size: 0.8rem; color: #1e40af;">Currently In Room</span>
+              <h3 style="font-size: 1.6rem; color: #1e40af;" id="count-in-room">0</h3>
+            </div>
+            <div style="background: #fef2f2; padding: 1rem; border-radius: 8px;">
+              <span style="font-size: 0.8rem; color: #991b1b;">Absent / Unscanned</span>
+              <h3 style="font-size: 1.6rem; color: #991b1b;" id="count-absent">40</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Student Roster Grid -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <h2 class="card-title">👥 Real-Time Class Roster (40 Students)</h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Zero-Queue Continuous Carry-Over Enabled</span>
+        </div>
+        <div class="table-container">
+          <table id="roster-table">
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Room State</th>
+                <th>Period Status</th>
+                <th>Entry Timestamp</th>
+                <th>Verification Method</th>
+                <th>Match Similarity</th>
+              </tr>
+            </thead>
+            <tbody id="roster-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="font-size: 0.8rem; color: var(--text-muted);">
+            Need to see historical entry timestamps, 1:1 match rates, and biometric logs?
+          </span>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('tab-logs')">
+            📜 View Classroom Entry & Verification Logs (Tab 5) →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: DOOR 1:1 FACE VERIFICATION SIMULATOR                   -->
+    <!-- ============================================================== -->
+    <div id="tab-verification" class="tab-pane">
+      <div class="grid-2">
+        
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🔐 Door Scanner & Camera Terminal</h2>
+            <span class="pill pill-neutral">Simulated Edge Node</span>
+          </div>
+
+          <form id="verify-form" onsubmit="handleDoorVerify(event)">
+            
+            <!-- Live Webcam Viewport with Dynamic Face Detection HUD -->
+            <div style="position: relative; margin-bottom: 0.75rem; border-radius: 10px; overflow: hidden; background: #0f172a; height: 260px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
+              <video id="webcam-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+              <!-- Live Dynamic Face Detection HUD Canvas -->
+              <canvas id="webcam-hud" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none;"></canvas>
+              <canvas id="webcam-canvas" style="display: none;"></canvas>
+              
+              <div id="webcam-placeholder" style="color: #94a3b8; text-align: center; padding: 1.5rem;">
+                <p style="font-size: 2.4rem; margin-bottom: 0.4rem;">📷</p>
+                <p style="font-size: 0.95rem; font-weight: 600; color: #f8fafc;">Live Door Camera (Webcam)</p>
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.35rem;">Click "Start Live Webcam" below to activate real-time face detection</p>
+              </div>
+
+              <!-- Floating Live Headcount Tag (Top Left) -->
+              <div id="hud-headcount-container" style="display: none; position: absolute; top: 12px; left: 12px; pointer-events: none; z-index: 10;">
+                <span class="pill pill-neutral" id="camera-headcount-badge" style="box-shadow: 0 2px 6px rgba(0,0,0,0.4); font-weight: 700; background: rgba(15, 23, 42, 0.85); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">👥 Headcount: 0</span>
+              </div>
+
+              <!-- HUD Status Floating Tag (Top Right) -->
+              <div id="hud-status-container" style="display: none; position: absolute; top: 12px; right: 12px; pointer-events: none; z-index: 10;">
+                <span class="pill pill-warning" id="camera-hud-badge" style="box-shadow: 0 2px 6px rgba(0,0,0,0.3); font-weight: 600;">🟡 Camera Initializing...</span>
+              </div>
+            </div>
+
+            <!-- Face Detection Quality & Headcount Indicator Bar -->
+            <div id="face-quality-bar" style="display: none; margin-bottom: 0.85rem; padding: 0.5rem 0.85rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 0.82rem; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <div>
+                <strong style="color: #065f46;">Tracking:</strong> <span id="face-detect-status" style="color: #047857; font-weight: 600;">Looking for face...</span>
+              </div>
+              <div>
+                <strong style="color: #065f46;">Headcount:</strong> <span id="face-headcount-status" style="color: #047857; font-weight: 700;">0 in view</span>
+              </div>
+              <div>
+                <strong style="color: #065f46;">Clarity:</strong> <span id="face-sharpness-status" style="color: #047857; font-weight: 600;">--</span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
+              <button id="btn-toggle-webcam" type="button" class="btn btn-outline" style="flex: 1;" onclick="toggleWebcam()">
+                ▶ Start Live Webcam
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="auditRoomHeadcount()" title="Instant camera view headcount audit and crowd density check">
+                👥 Audit Headcount
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="enrollLiveWebcamFace()" title="Enroll your active webcam face for the entered Student ID">
+                📸 Enroll My Face
+              </button>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <label style="margin-bottom: 0;">Claimed Identity (Badge ID / Student ID)</label>
+                <button type="button" class="btn btn-outline btn-sm" id="btn-audio-toggle" onclick="toggleAudio()" style="font-size: 0.72rem; padding: 0.15rem 0.5rem; height: auto;">
+                  🔊 Chimes: ON
+                </button>
+              </div>
+              <input type="text" id="verify-student-id" class="form-control" value="STU_001" placeholder="e.g. STU_001" oninput="debounceCheckStudentProfile()">
+              
+              <!-- Student Profile & Enrolled Avatar Badge Preview -->
+              <div id="student-identity-preview" style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; padding: 0.45rem 0.75rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;">
+                <div id="student-avatar-box" style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #64748b; font-size: 0.8rem; border: 2px solid #10b981; flex-shrink: 0;">
+                  <span id="student-avatar-initials">STU</span>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <span id="student-preview-name" style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">Student STU_001</span>
+                    <span id="student-enrollment-pill" class="pill pill-success" style="font-size: 0.68rem; padding: 0.1rem 0.45rem;">Enrolled</span>
+                  </div>
+                  <p id="student-enrollment-sub" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem;">Biometric template stored</p>
+                </div>
+              </div>
+
+              <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                💡 Tip: Type any Student ID and click <strong>📸 Enroll My Face</strong> to register your live face, or test pre-enrolled STU_001 to STU_040.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label>Verification Modality / Device</label>
+              <select id="verify-method" class="form-control" onchange="handleMethodChange()">
+                <option value="Fingerprint Biometric Scanner" selected>👆 Fingerprint Biometric Scanner (Optical Sensor)</option>
+                <option value="Webcam 1:1 Face + Live Camera">📷 Webcam 1:1 Face + Live Camera</option>
+                <option value="RFID Card Tap">💳 RFID Smart Card Tap</option>
+                <option value="Dual-Factor (Fingerprint + Face)">🔐 Dual-Factor (Fingerprint + Face Camera)</option>
+              </select>
+            </div>
+
+            <!-- Fingerprint Optical Sensor Interactive HUD Box -->
+            <div id="fingerprint-hud-box" style="margin-bottom: 1rem; padding: 0.85rem 1rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem;">
+              <div style="font-size: 2rem; color: #047857; width: 44px; height: 44px; background: #d1fae5; border-radius: 8px; display: flex; align-items: center; justify-content: center;" id="fp-icon-anim">👆</div>
+              <div style="flex: 1;">
+                <strong style="font-size: 0.85rem; color: #065f46; display: block;">Optical Fingerprint Minutiae Scanner Active</strong>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem;">
+                  Decoupled hardware abstraction — matches claimed fingerprint minutiae template.
+                </p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Door Location</label>
+              <select id="verify-room-id" class="form-control">
+                <option value="hall_a">hall_a (Lecture Hall Complex A)</option>
+                <option value="lab_cs">lab_cs (Computer Science Lab 101)</option>
+                <option value="hall_b">hall_b (Lecture Hall B)</option>
+                <option value="lab_physics">lab_physics (Advanced Physics Lab)</option>
+                <option value="eng_block">eng_block (Engineering Center)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.25rem;">
+                <label style="margin-bottom: 0;">Scan Timestamp</label>
+                <div style="display: flex; gap: 0.35rem; align-items: center;">
+                  <span id="live-clock-badge" style="font-size: 0.7rem; padding: 0.15rem 0.45rem; background: #ecfdf5; color: #047857; border-radius: 4px; border: 1px solid #a7f3d0; font-weight: 600;">● Live Real-Time</span>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="setCurrentTimestamp()" style="font-size: 0.72rem; padding: 0.15rem 0.5rem; height: auto;">
+                    ⚡ Sync Live Clock
+                  </button>
+                </div>
+              </div>
+              <input type="text" id="verify-timestamp" class="form-control" placeholder="YYYY-MM-DDTHH:MM:SS (Auto-synced with live clock)">
+            </div>
+
+            <div style="margin: 1.25rem 0;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="verify-is-spoof">
+                <span>🔴 Simulate Presentation Attack (Printed Photo / Screen Spoof)</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="verify-is-blur">
+                <span>🟡 Simulate Camera Blur / Poor Lighting (Manual Review Trigger)</span>
+              </label>
+            </div>
+
+            <button type="submit" id="btn-submit-verify" class="btn btn-primary" style="width: 100%;">
+              👆 Scan Fingerprint & Verify Entry
+            </button>
+          </form>
+
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🚪 Physical Door Solenoid Reaction</h2>
+            <span id="door-lock-badge" class="pill pill-neutral">Idle</span>
+          </div>
+
+          <div id="verify-result-box" class="result-box" style="display: none;">
+            <h3 id="verify-decision-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;"></h3>
+            <p id="verify-message" style="font-size: 0.85rem; margin-bottom: 0.75rem; color: var(--text-muted);"></p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
+              <div><strong>Door Barrier:</strong> <span id="verify-door-status"></span></div>
+              <div><strong>Period Status:</strong> <span id="verify-att-status"></span></div>
+              <div><strong>1:1 Cosine Similarity:</strong> <span id="verify-sim-score"></span></div>
+              <div><strong>Anti-Spoof Liveness:</strong> <span id="verify-live-score"></span></div>
+              <div><strong>Camera Headcount:</strong> <span id="verify-headcount-score">--</span></div>
+              <div><strong>Anti-Tailgating:</strong> <span id="verify-tailgating-status">--</span></div>
+            </div>
+            
+            <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px dashed var(--border); display: flex; justify-content: flex-end;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="switchTab('tab-logs')">
+                📜 View In Classroom Logs (Tab 5) →
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 8px; font-size: 0.85rem;">
+            <p style="font-weight: 600; color: var(--dark); margin-bottom: 0.4rem;">"Verify, Do Not Search" Principle:</p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">
+              The badge provides a claimed identity (STU_001). The door camera extracts the live face and strictly compares it against STU_001's enrolled 512-d vector. This $O(1)$ 1:1 match runs in &lt;20ms and completely blocks proxy attendance.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: GATE IRREGULARITY & CURFEW WALL (MODULE 1)              -->
+    <!-- ============================================================== -->
+    <div id="tab-secops" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🚨 SecOps Access Anomaly Simulator</h2>
+          <span class="pill pill-neutral">Module 1 Engine</span>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Test physical campus gate access events against the deterministic physics rules and behavioral machine learning ensemble:
+        </p>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+          <button class="btn btn-outline" onclick="testGateScenario('normal')">
+            🟢 1. Normal Daytime Arrival
+          </button>
+          <button class="btn btn-outline" onclick="testGateScenario('buddy')">
+            🔴 2. Buddy-Punching (< 20s across gates)
+          </button>
+          <button class="btn btn-outline" onclick="testGateScenario('curfew')">
+            🔴 3. Admin Curfew Breach (02:30 AM)
+          </button>
+          <button class="btn btn-outline" onclick="testGateScenario('denied')">
+            🔴 4. Brute-Force Denied Burst
+          </button>
+        </div>
+
+        <div id="secops-result" class="result-box" style="display: none;"></div>
+
+        <!-- Interactive Manual Buddy-Punching & Impossible Travel Lab -->
+        <div style="margin-top: 1.5rem; padding: 1.25rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.05rem; color: var(--dark); display: flex; align-items: center; gap: 0.5rem;">
+              👥 Interactive Buddy-Punching (Impossible Travel) Lab
+            </h3>
+            <span class="pill pill-danger" style="font-size: 0.72rem;">O(1) Physics Rule Engine</span>
+          </div>
+
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Demonstrate a proxy attempt where the same person's card/fingerprint is scanned at two distant locations faster than humanly possible:
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">STUDENT ID</label>
+              <input type="text" id="buddy-student-id" class="form-control" value="STU_BUDDY_001" style="background: white;" />
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">LOCATION 1 (SCAN 1)</label>
+              <select id="buddy-loc-1" class="form-control" style="background: white;">
+                <option value="gate_north" selected>gate_north (North Gate)</option>
+                <option value="hall_a">hall_a (Lecture Hall A)</option>
+                <option value="gate_main">gate_main (Main Campus Gate)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">LOCATION 2 (SCAN 2)</label>
+              <select id="buddy-loc-2" class="form-control" style="background: white;">
+                <option value="gate_south" selected>gate_south (South Gate - 480s walk)</option>
+                <option value="lab_cs">lab_cs (CS Lab 101)</option>
+                <option value="admin_block">admin_block (Admin Building)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">SCAN DELTA-T</label>
+              <select id="buddy-delta" class="form-control" style="background: white;">
+                <option value="15" selected>15 seconds (Impossible Travel Attack)</option>
+                <option value="30">30 seconds (Impossible Travel Attack)</option>
+                <option value="600">600 seconds (Valid Physical Walking)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="executeManualBuddyPunching()" style="background: #dc2626; border-color: #dc2626; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);">
+              🚨 Execute Live Buddy-Punching Attack
+            </button>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">
+              Watch O(1) physics enforcement lock turnstiles and flag high confidence security breach.
+            </span>
+          </div>
+
+          <!-- Stepper Result Output -->
+          <div id="buddy-stepper-box" style="display: none; margin-top: 1rem; padding: 1rem; background: white; border: 1px solid var(--border); border-radius: 8px;">
+            <div id="buddy-step-1" style="margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px dashed var(--border);"></div>
+            <div id="buddy-step-2"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: TEACHER MANUAL REVIEW QUEUE                            -->
+    <!-- ============================================================== -->
+    <div id="tab-review" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📋 Teacher Manual Review Queue</h2>
+          <button class="btn btn-outline btn-sm" onclick="loadReviewQueue()">🔄 Refresh Queue</button>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Students with borderline match scores (0.55 - 0.71) or camera lighting occlusions are permitted entry to prevent doorway crowd bottlenecks, but flagged here for 1-click teacher confirmation:
+        </p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Room</th>
+                <th>Scan Time</th>
+                <th>Similarity Score</th>
+                <th>Reason</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="review-tbody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                  No scans currently pending manual review.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 5: CLASSROOM ENTRY & 1:1 VERIFICATION LOGS                 -->
+    <!-- ============================================================== -->
+    <div id="tab-logs" class="tab-pane">
+      <div class="card">
+        
+        <!-- Header & Action Toolbar -->
+        <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 class="card-title">📜 Classroom Entry & 1:1 Biometric Verification Logs</h2>
+            <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">
+              Full audit trail: who entered, which classroom, exact timestamp, 1:1 face similarity, liveness, and unlock decisions.
+            </span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <span class="badge-status" id="logs-live-indicator" style="background: #ecfdf5; color: #047857; font-size: 0.75rem;">
+              ● Live Stream Active
+            </span>
+            <button class="btn btn-outline btn-sm" onclick="toggleLogsAutoRefresh()" id="btn-toggle-autorefresh" title="Toggle automatic background updates">
+              ⏱️ Auto-Refresh: ON (4s)
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="loadVerificationLogs()" title="Refresh logs from server">
+              🔄 Refresh
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="exportLogsCSV()" title="Export all logs as CSV spreadsheet">
+              📥 Export CSV
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="clearVerificationLogs()" style="color: #dc2626; border-color: #fca5a5;" title="Clear test logs">
+              🗑️ Clear Logs
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric KPI Cards Bar -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div style="background: #f8fafc; border: 1px solid var(--border); padding: 0.85rem 1rem; border-radius: 8px;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Total Door Scans</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--dark);" id="log-stat-total">0</div>
+          </div>
+          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.85rem 1rem; border-radius: 8px;">
+            <div style="font-size: 0.75rem; color: #065f46; font-weight: 500;">✅ Accepted & Entered (Unlocked)</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; color: #047857;" id="log-stat-accepted">0</div>
+          </div>
+          <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 0.85rem 1rem; border-radius: 8px;">
+            <div style="font-size: 0.75rem; color: #991b1b; font-weight: 500;">❌ Rejected (Locked / Mismatch / Spoof)</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; color: #dc2626;" id="log-stat-rejected">0</div>
+          </div>
+          <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 0.85rem 1rem; border-radius: 8px;">
+            <div style="font-size: 0.75rem; color: #92400e; font-weight: 500;">⚠️ Borderline Review Required</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; color: #d97706;" id="log-stat-review">0</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls Bar -->
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; padding: 0.85rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;">
+          
+          <div style="display: flex; gap: 0.5rem; flex: 1; min-width: 250px;">
+            <input type="text" id="log-search-input" class="form-control" placeholder="🔍 Search student name, ID (e.g. STU_001), room, or reason..." oninput="handleLogFilterChange()" style="background: white;" />
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Outcome:</label>
+            <select id="log-outcome-filter" class="form-control" onchange="handleLogFilterChange()" style="width: auto; padding: 0.45rem 0.75rem; font-size: 0.85rem; background: white;">
+              <option value="all">All Outcomes</option>
+              <option value="accepted">✅ Accepted Only (Unlocked)</option>
+              <option value="rejected">❌ Rejected Only (Locked)</option>
+              <option value="review">⚠️ Manual Review</option>
+            </select>
+
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-left: 0.5rem;">Room:</label>
+            <select id="log-room-filter" class="form-control" onchange="handleLogFilterChange()" style="width: auto; padding: 0.45rem 0.75rem; font-size: 0.85rem; background: white;">
+              <option value="all">All Classrooms & Labs</option>
+              <option value="hall_a">Lecture Hall A</option>
+              <option value="hall_b">Lecture Hall B</option>
+              <option value="lab_cs">CS Lab 101</option>
+              <option value="lab_physics">Advanced Physics Lab</option>
+              <option value="auditorium">Main Auditorium</option>
+            </select>
+
+            <button class="btn btn-outline btn-sm" onclick="resetLogFilters()" title="Reset all filters">
+              Clear Filters
+            </button>
+          </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="table-container">
+          <table id="logs-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Student Identity</th>
+                <th>Classroom / Location</th>
+                <th>1:1 Verification Outcome</th>
+                <th>Face Similarity</th>
+                <th>Liveness / Spoof</th>
+                <th>Method</th>
+                <th>Period Status</th>
+                <th>Details / Reason</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Telemetry Inspector -->
+  <div id="log-detail-modal" class="modal-backdrop" onclick="handleModalBackdropClick(event)">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);">
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--dark); margin: 0;">
+          🔍 1:1 Verification Telemetry Inspector
+        </h3>
+        <button onclick="closeLogModal()" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-muted); padding: 0.2rem 0.5rem; border-radius: 4px;">✕</button>
+      </div>
+      <div style="padding: 1.5rem;" id="modal-body">
+        <!-- Dynamically populated -->
+      </div>
+      <div style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+        <button class="btn btn-outline btn-sm" onclick="closeLogModal()">Close Inspector</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Smart Campus Unified Architecture &copy; 2026. Designed with Emerald Green & White Academic Aesthetic.</p>
+  </footer>
+
+  <script>
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+      if (targetBtn) {
+        targetBtn.classList.add('active');
+      } else if (event && event.target) {
+        event.target.classList.add('active');
+      }
+      
+      const pane = document.getElementById(tabId);
+      if (pane) pane.classList.add('active');
+
+      if (tabId === 'tab-attendance') loadPresenceState();
+      if (tabId === 'tab-review') loadReviewQueue();
+      if (tabId === 'tab-logs') loadVerificationLogs();
+    }
+
+    // Load Classroom Presence State
+    async function loadPresenceState() {
+      try {
+        const res = await fetch('/attendance/presence');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        document.getElementById('stat-in-room').innerText = data.in_room_now || 0;
+        document.getElementById('count-in-room').innerText = data.in_room_now || 0;
+        document.getElementById('count-present').innerText = data.present_count || 0;
+        document.getElementById('count-late').innerText = data.late_count || 0;
+        document.getElementById('count-absent').innerText = data.absent_count || 0;
+        document.getElementById('stat-review-count').innerText = data.review_count || 0;
+        document.getElementById('course-title').innerText = data.course_name;
+        document.getElementById('session-badge').innerText = `Period ${data.period_number} Active`;
+
+        // Render Roster
+        const tbody = document.getElementById('roster-tbody');
+        tbody.innerHTML = '';
+        const records = data.records || {};
+
+        for (let i = 1; i <= 40; i++) {
+          const sId = `STU_${String(i).padStart(3, '0')}`;
+          const rec = records[sId] || null;
+          const isPresent = rec && rec.status === 'Present';
+          const isLate = rec && rec.status === 'Late';
+          const isReview = rec && rec.status === 'Review';
+          const isCarry = rec && rec.is_carryover;
+
+          let statusPill = '<span class="pill pill-neutral">Absent</span>';
+          if (isPresent) statusPill = `<span class="pill pill-success">${isCarry ? 'Present (Carry-Over)' : 'Present'}</span>`;
+          else if (isLate) statusPill = '<span class="pill pill-warning">Late</span>';
+          else if (isReview) statusPill = '<span class="pill pill-warning">Review</span>';
+
+          const roomState = isPresent || isLate ? '<span style="color: var(--primary); font-weight: 600;">● IN_ROOM</span>' : '<span style="color: var(--text-muted);">○ OUT_OF_ROOM</span>';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${sId}</strong></td>
+            <td>${roomState}</td>
+            <td>${statusPill}</td>
+            <td>${rec ? rec.entry_time.split('T')[1] || rec.entry_time : '-'}</td>
+            <td>${rec ? rec.method : '-'}</td>
+            <td>${rec ? (rec.similarity_score * 100).toFixed(1) + '%' : '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      } catch (e) {
+        console.error("Failed to load presence state:", e);
+      }
+    }
+
+    // Webcam Stream & Dynamic Face HUD Management
+    let webcamStream = null;
+    let hudLoopInterval = null;
+    let lastFaceDetection = null;
+
+    async function toggleWebcam() {
+      const video = document.getElementById('webcam-video');
+      const hudCanvas = document.getElementById('webcam-hud');
+      const placeholder = document.getElementById('webcam-placeholder');
+      const hudBadgeContainer = document.getElementById('hud-status-container');
+      const hudHeadcountContainer = document.getElementById('hud-headcount-container');
+      const qualityBar = document.getElementById('face-quality-bar');
+      const btn = document.getElementById('btn-toggle-webcam');
+
+      if (webcamStream) {
+        // Stop active camera
+        if (hudLoopInterval) clearInterval(hudLoopInterval);
+        hudLoopInterval = null;
+        lastFaceDetection = null;
+
+        webcamStream.getTracks().forEach(t => t.stop());
+        webcamStream = null;
+        video.srcObject = null;
+        video.style.display = 'none';
+        hudCanvas.style.display = 'none';
+        hudBadgeContainer.style.display = 'none';
+        if (hudHeadcountContainer) hudHeadcountContainer.style.display = 'none';
+        if (qualityBar) qualityBar.style.display = 'none';
+        placeholder.style.display = 'block';
+        btn.innerText = '▶ Start Live Webcam';
+        btn.className = 'btn btn-outline';
+      } else {
+        // Start camera
+        try {
+          webcamStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }
+          });
+          video.srcObject = webcamStream;
+          video.style.display = 'block';
+          placeholder.style.display = 'none';
+          hudCanvas.style.display = 'block';
+          hudBadgeContainer.style.display = 'block';
+          if (hudHeadcountContainer) hudHeadcountContainer.style.display = 'block';
+          if (qualityBar) qualityBar.style.display = 'flex';
+          btn.innerText = '⏹ Stop Live Webcam';
+          btn.className = 'btn btn-primary';
+
+          video.onloadedmetadata = () => {
+            hudCanvas.width = video.videoWidth || 640;
+            hudCanvas.height = video.videoHeight || 480;
+            startFaceHUDLoop();
+          };
+        } catch (err) {
+          alert('Could not access webcam: ' + err.message + '\nEnsure camera permissions are allowed in your browser.');
+        }
+      }
+    }
+
+    // Fast asynchronous HUD tracking loop (~160ms cycle)
+    function startFaceHUDLoop() {
+      if (hudLoopInterval) clearInterval(hudLoopInterval);
+      let isFetching = false;
+
+      hudLoopInterval = setInterval(async () => {
+        if (!webcamStream || isFetching) return;
+        const video = document.getElementById('webcam-video');
+        if (!video || video.videoWidth === 0) return;
+
+        // Capture lightweight 320x240 frame for sub-10ms network transmission
+        const snap = document.createElement('canvas');
+        snap.width = 320;
+        snap.height = 240;
+        const sctx = snap.getContext('2d');
+        sctx.drawImage(video, 0, 0, 320, 240);
+        const b64 = snap.toDataURL('image/jpeg', 0.65);
+
+        isFetching = true;
+        try {
+          const res = await fetch('/attendance/detect-face', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image_base64: b64 })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            lastFaceDetection = data;
+            renderFaceHUD(data);
+          }
+        } catch (e) {
+          // ignore transient frame network skips
+        } finally {
+          isFetching = false;
+        }
+      }, 160);
+    }
+
+    // Renders dynamic corner reticles, landmarks, and confidence HUD on canvas for ALL faces
+    function renderFaceHUD(data) {
+      const hud = document.getElementById('webcam-hud');
+      if (!hud) return;
+      const ctx = hud.getContext('2d');
+      const w = hud.width;
+      const h = hud.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const badge = document.getElementById('camera-hud-badge');
+      const headcountBadge = document.getElementById('camera-headcount-badge');
+      const statusText = document.getElementById('face-detect-status');
+      const headcountText = document.getElementById('face-headcount-status');
+      const sharpText = document.getElementById('face-sharpness-status');
+
+      const headcount = data ? (data.genuine_headcount !== undefined ? data.genuine_headcount : (data.headcount !== undefined ? data.headcount : (data.face_detected ? 1 : 0))) : 0;
+      const spoofCount = data ? (data.spoof_count || 0) : 0;
+      const faces = (data && data.all_faces && data.all_faces.length > 0)
+        ? data.all_faces
+        : (data && data.face_detected && data.box ? [{ face_id: 1, box: data.box, confidence: data.confidence, landmarks: data.landmarks, is_spoof: false }] : []);
+
+      // 1. Update Floating Headcount Tag
+      if (headcountBadge) {
+        if (headcount === 0) {
+          if (spoofCount > 0) {
+            headcountBadge.className = 'pill pill-danger';
+            headcountBadge.style.background = 'rgba(127, 29, 29, 0.95)';
+            headcountBadge.style.color = '#fecaca';
+            headcountBadge.style.borderColor = '#ef4444';
+            headcountBadge.innerText = `👥 Headcount: 0 (🚫 ${spoofCount} Phone Photo Filtered)`;
+          } else {
+            headcountBadge.className = 'pill pill-neutral';
+            headcountBadge.style.background = 'rgba(15, 23, 42, 0.85)';
+            headcountBadge.style.color = '#94a3b8';
+            headcountBadge.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+            headcountBadge.innerText = '👥 Headcount: 0';
+          }
+        } else if (headcount === 1) {
+          headcountBadge.className = 'pill pill-success';
+          headcountBadge.style.background = 'rgba(6, 78, 59, 0.90)';
+          headcountBadge.style.color = '#a7f3d0';
+          headcountBadge.style.borderColor = '#10b981';
+          headcountBadge.innerText = spoofCount > 0
+            ? `👥 Headcount: 1 Person (🚫 ${spoofCount} Phone Photo Filtered)`
+            : '👥 Headcount: 1 Person';
+        } else if (headcount === 2) {
+          headcountBadge.className = 'pill pill-danger';
+          headcountBadge.style.background = 'rgba(127, 29, 29, 0.92)';
+          headcountBadge.style.color = '#fecaca';
+          headcountBadge.style.borderColor = '#ef4444';
+          headcountBadge.innerText = spoofCount > 0
+            ? `👥 Headcount: 2 (Tailgating Alert!) + ${spoofCount} Spoof`
+            : '👥 Headcount: 2 (Tailgating Alert!)';
+        } else {
+          headcountBadge.className = 'pill pill-warning';
+          headcountBadge.style.background = 'rgba(120, 53, 15, 0.92)';
+          headcountBadge.style.color = '#fde68a';
+          headcountBadge.style.borderColor = '#f59e0b';
+          headcountBadge.innerText = `👥 Headcount: ${headcount} Persons`;
+        }
+      }
+
+      // 2. Update Status Bar Headcount
+      if (headcountText) {
+        if (spoofCount > 0) {
+          headcountText.innerText = `${headcount} live ${headcount === 1 ? 'person' : 'persons'} (${spoofCount} phone spoof filtered)`;
+          headcountText.style.color = headcount > 0 ? '#047857' : '#dc2626';
+        } else {
+          headcountText.innerText = `${headcount} ${headcount === 1 ? 'person' : 'persons'} in view`;
+          headcountText.style.color = headcount === 1 ? '#047857' : (headcount > 1 ? '#b45309' : '#64748b');
+        }
+      }
+
+      if (faces.length > 0) {
+        const sx = w / (data.frame_width || 320);
+        const sy = h / (data.frame_height || 240);
+
+        // Draw top banner: Tailgating or Spoof attack filtered
+        if (headcount > 1) {
+          const bannerText = spoofCount > 0
+            ? `⚠️ TAILGATING: ${headcount} LIVE PEOPLE (🚫 ${spoofCount} PHONE SPOOF FILTERED)`
+            : `⚠️ TAILGATING ALERT: ${headcount} PEOPLE IN VIEW`;
+          ctx.font = 'bold 12px Inter, sans-serif';
+          const bannerMetrics = ctx.measureText(bannerText);
+          const bannerW = bannerMetrics.width + 24;
+          ctx.fillStyle = 'rgba(220, 38, 38, 0.92)';
+          ctx.beginPath();
+          ctx.roundRect((w - bannerW) / 2, 8, bannerW, 24, 6);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(bannerText, (w - bannerW) / 2 + 12, 24);
+        } else if (spoofCount > 0 && headcount === 0) {
+          const bannerText = `🛡️ PRESENTATION ATTACK FILTERED: ${spoofCount} PHONE / PHOTO DETECTED (0 HEADCOUNT)`;
+          ctx.font = 'bold 12px Inter, sans-serif';
+          const bannerMetrics = ctx.measureText(bannerText);
+          const bannerW = bannerMetrics.width + 24;
+          ctx.fillStyle = 'rgba(185, 28, 28, 0.94)';
+          ctx.beginPath();
+          ctx.roundRect((w - bannerW) / 2, 8, bannerW, 24, 6);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(bannerText, (w - bannerW) / 2 + 12, 24);
+        }
+
+        // Draw bounding boxes for EACH detected face
+        faces.forEach((f, idx) => {
+          const isSpoof = Boolean(f.is_spoof);
+          const isPrimary = (idx === 0 && !isSpoof);
+          const fBox = f.box;
+          if (!fBox) return;
+
+          const bx = fBox[0] * sx;
+          const by = fBox[1] * sy;
+          const bw = fBox[2] * sx;
+          const bh = fBox[3] * sy;
+          const confPct = Math.round((f.confidence || 0.8) * 100);
+
+          let mainColor, glowColor, pillBg, faceLabel;
+          if (isSpoof) {
+            mainColor = '#ef4444';
+            glowColor = '#f87171';
+            pillBg = 'rgba(153, 27, 27, 0.95)';
+            const rSnippet = (f.spoof_reasons && f.spoof_reasons.length > 0)
+              ? f.spoof_reasons[0].split('(')[0].trim()
+              : (f.spoof_type || 'Phone Screen');
+            faceLabel = `📱 SPOOF FILTERED: ${rSnippet} (0 Headcount)`;
+          } else {
+            mainColor = isPrimary ? '#10b981' : (idx === 1 ? '#6366f1' : '#06b6d4');
+            glowColor = isPrimary ? '#34d399' : (idx === 1 ? '#818cf8' : '#22d3ee');
+            pillBg = isPrimary ? 'rgba(6, 78, 59, 0.90)' : 'rgba(30, 27, 75, 0.90)';
+            faceLabel = isPrimary ? `🟢 Person #1 (${confPct}%)` : `👤 Person #${f.face_id || (idx + 1)} (${confPct}%)`;
+          }
+
+          // Corner Reticles
+          ctx.strokeStyle = mainColor;
+          ctx.lineWidth = (isPrimary || isSpoof) ? 3.5 : 2.5;
+          const cornerLen = Math.min(20, bw * 0.25, bh * 0.25);
+
+          // Top-Left
+          ctx.beginPath();
+          ctx.moveTo(bx, by + cornerLen);
+          ctx.lineTo(bx, by);
+          ctx.lineTo(bx + cornerLen, by);
+          ctx.stroke();
+
+          // Top-Right
+          ctx.beginPath();
+          ctx.moveTo(bx + bw - cornerLen, by);
+          ctx.lineTo(bx + bw, by);
+          ctx.lineTo(bx + bw, by + cornerLen);
+          ctx.stroke();
+
+          // Bottom-Left
+          ctx.beginPath();
+          ctx.moveTo(bx, by + bh - cornerLen);
+          ctx.lineTo(bx, by + bh);
+          ctx.lineTo(bx + cornerLen, by + bh);
+          ctx.stroke();
+
+          // Bottom-Right
+          ctx.beginPath();
+          ctx.moveTo(bx + bw - cornerLen, by + bh);
+          ctx.lineTo(bx + bw, by + bh);
+          ctx.lineTo(bx + bw, by + bh - cornerLen);
+          ctx.stroke();
+
+          // Bounding box: Dashed for spoof, softer for live
+          ctx.strokeStyle = isSpoof ? 'rgba(239, 68, 68, 0.85)' : (isPrimary ? 'rgba(16, 185, 129, 0.40)' : 'rgba(99, 102, 241, 0.40)');
+          ctx.lineWidth = isSpoof ? 2.0 : 1.2;
+          ctx.setLineDash(isSpoof ? [6, 4] : [4, 4]);
+          ctx.strokeRect(bx, by, bw, bh);
+          ctx.setLineDash([]);
+
+          // Facial landmarks
+          if (f.landmarks && f.landmarks.length > 0) {
+            ctx.fillStyle = glowColor;
+            ctx.shadowColor = mainColor;
+            ctx.shadowBlur = 5;
+            f.landmarks.forEach(pt => {
+              ctx.beginPath();
+              ctx.arc(pt[0] * sx, pt[1] * sy, 3, 0, Math.PI * 2);
+              ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+          }
+
+          // Header Pill above Bounding Box
+          ctx.font = 'bold 11px Inter, sans-serif';
+          const pMetrics = ctx.measureText(faceLabel);
+          const pW = pMetrics.width + 14;
+          const pH = 20;
+          const pY = Math.max(8, by - 25);
+
+          ctx.fillStyle = pillBg;
+          ctx.beginPath();
+          ctx.roundRect(bx, pY, pW, pH, 5);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(faceLabel, bx + 7, pY + 14);
+        });
+
+        // Update badge and status text
+        const primFace = faces.find(f => !f.is_spoof) || faces[0];
+        const primConf = Math.round((primFace.confidence || 0.8) * 100);
+        if (badge) {
+          if (headcount > 1) {
+            badge.className = 'pill pill-warning';
+            badge.innerText = `⚠️ Multi-Face: ${headcount}`;
+          } else if (headcount === 0 && spoofCount > 0) {
+            badge.className = 'pill pill-danger';
+            badge.innerText = `🛡️ Spoof Filtered: 0 Live`;
+          } else {
+            badge.className = 'pill pill-success';
+            badge.innerText = `🟢 Face Locked: ${primConf}%`;
+          }
+        }
+        if (statusText) {
+          if (headcount === 0 && spoofCount > 0) {
+            statusText.innerText = `Phone Photo Spoof Filtered (${spoofCount} attack blocked)`;
+            statusText.style.color = '#dc2626';
+          } else {
+            statusText.innerText = headcount > 1 ? `Multi-Face Locked (${headcount} people)` : `Face Locked (${primConf}% conf)`;
+            statusText.style.color = '#047857';
+          }
+        }
+        if (sharpText) {
+          sharpText.innerText = `${data.quality_pass ? 'Sharp' : 'Blurry'} (${data.sharpness})`;
+          sharpText.style.color = data.quality_pass ? '#047857' : '#d97706';
+        }
+      } else {
+        // No face detected - Draw Amber Centering Target Frame
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.7)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+        const guideW = w * 0.45;
+        const guideH = h * 0.65;
+        const guideX = (w - guideW) / 2;
+        const guideY = (h - guideH) / 2;
+        ctx.strokeRect(guideX, guideY, guideW, guideH);
+        ctx.setLineDash([]);
+
+        const guideMsg = '⚠️ Align Face in Center of Camera';
+        ctx.font = '500 12px Inter, sans-serif';
+        const msgW = ctx.measureText(guideMsg).width;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+        ctx.beginPath();
+        ctx.roundRect((w - msgW - 20) / 2, guideY + guideH - 32, msgW + 20, 24, 6);
+        ctx.fill();
+
+        ctx.fillStyle = '#fef3c7';
+        ctx.fillText(guideMsg, (w - msgW) / 2, guideY + guideH - 16);
+
+        if (badge) {
+          badge.className = 'pill pill-warning';
+          badge.innerText = '🟡 Searching for Face...';
+        }
+        if (statusText) {
+          statusText.innerText = 'No face detected in frame';
+          statusText.style.color = '#d97706';
+        }
+        if (sharpText) {
+          sharpText.innerText = data ? `${data.sharpness}` : '--';
+        }
+      }
+    }
+
+    function captureWebcamBase64() {
+      const video = document.getElementById('webcam-video');
+      if (!webcamStream || video.videoWidth === 0) return null;
+
+      const canvas = document.getElementById('webcam-canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg', 0.90);
+    }
+
+    async function enrollLiveWebcamFace() {
+      const rawId = document.getElementById('verify-student-id').value.trim() || 'STU_001';
+      const sId = rawId.toUpperCase().replace(/\s+/g, '_');
+      document.getElementById('verify-student-id').value = sId;
+
+      if (!webcamStream) {
+        alert('Please click "▶ Start Live Webcam" first to turn on your camera!');
+        return;
+      }
+      if (lastFaceDetection && !lastFaceDetection.face_detected) {
+        if (!confirm('No face is currently detected in the camera frame! Do you still want to proceed with capture?')) {
+          return;
+        }
+      }
+      const b64 = captureWebcamBase64();
+      if (!b64) {
+        alert('Could not grab frame from webcam. Please ensure camera is streaming.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/attendance/enroll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            student_id: sId,
+            name: 'Student ' + sId,
+            image_base64: b64
+          })
+        });
+        const data = await res.json();
+        alert(`✅ Success!\nBiometric face embedding registered for ID: ${sId}.\n\nYou can now click "⚡ Capture Face & Verify Entry" to verify yourself!`);
+        checkStudentProfile();
+      } catch (err) {
+        alert('Enrollment failed: ' + err);
+      }
+    }
+
+    // Method & Modality Change Handler
+    function handleMethodChange() {
+      const method = document.getElementById('verify-method')?.value;
+      const fpHud = document.getElementById('fingerprint-hud-box');
+      const submitBtn = document.getElementById('btn-submit-verify');
+
+      if (method === "Fingerprint Biometric Scanner") {
+        if (fpHud) fpHud.style.display = 'flex';
+        if (submitBtn) submitBtn.innerHTML = '👆 Scan Fingerprint & Verify Entry';
+      } else if (method === "Webcam 1:1 Face + Live Camera") {
+        if (fpHud) fpHud.style.display = 'none';
+        if (submitBtn) submitBtn.innerHTML = '📷 Capture Face & Verify Entry';
+      } else if (method === "RFID Card Tap") {
+        if (fpHud) fpHud.style.display = 'none';
+        if (submitBtn) submitBtn.innerHTML = '💳 Tap RFID Card & Verify Entry';
+      } else {
+        if (fpHud) fpHud.style.display = 'flex';
+        if (submitBtn) submitBtn.innerHTML = '🔐 Verify Dual-Factor (Fingerprint + Face)';
+      }
+    }
+
+    // Set Current ISO Timestamp Helper
+    function setCurrentTimestamp(force = true) {
+      const tsInput = document.getElementById('verify-timestamp');
+      if (!tsInput) return;
+      if (!force && tsInput.dataset.manualEdit === "true") return;
+
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const isoLocal = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      tsInput.value = isoLocal;
+
+      if (force) {
+        tsInput.dataset.manualEdit = "false";
+        const badge = document.getElementById('live-clock-badge');
+        if (badge) {
+          badge.innerText = '● Live Real-Time';
+          badge.style.background = '#ecfdf5';
+          badge.style.color = '#047857';
+          badge.style.borderColor = '#a7f3d0';
+        }
+      }
+    }
+
+    // Clear verification logs from server
+    async function clearVerificationLogs() {
+      if (!confirm("Are you sure you want to clear the classroom verification logs? Previous test entries will be removed.")) return;
+      try {
+        const res = await fetch('/attendance/logs/clear', { method: 'POST' });
+        if (res.ok) {
+          await loadVerificationLogs();
+          alert("Classroom verification logs have been reset.");
+        }
+      } catch (err) {
+        alert("Failed to clear logs: " + err);
+      }
+    }
+
+    // Door Verification Handler
+    async function handleDoorVerify(e) {
+      e.preventDefault();
+      const rawId = document.getElementById('verify-student-id').value.trim() || 'STU_001';
+      const sId = rawId.toUpperCase().replace(/\s+/g, '_');
+      document.getElementById('verify-student-id').value = sId;
+
+      const roomId = document.getElementById('verify-room-id').value;
+      const tsInput = document.getElementById('verify-timestamp');
+      let ts = tsInput ? tsInput.value.trim() : '';
+
+      // If timestamp is blank or contains the old static sample date, replace with current real time
+      if (!ts || ts === "2026-09-29T09:05:00" || ts.startsWith("2026-09-29")) {
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        if (tsInput) tsInput.value = ts;
+      }
+
+      const isSpoof = document.getElementById('verify-is-spoof').checked;
+      const isBlur = document.getElementById('verify-is-blur').checked;
+      const chosenMethod = document.getElementById('verify-method')?.value || "Fingerprint Biometric Scanner";
+
+      let b64 = null;
+      if (webcamStream && chosenMethod.includes("Face")) {
+        if (lastFaceDetection && !lastFaceDetection.face_detected && !isSpoof && !isBlur) {
+          const proceed = confirm('⚠️ Camera does not detect a clear face right now.\nMake sure your face is centered in the camera. Proceed anyway?');
+          if (!proceed) return;
+        }
+        b64 = captureWebcamBase64();
+      }
+
+      const payload = {
+        claimed_id: sId,
+        room_id: roomId,
+        timestamp: ts,
+        method: chosenMethod,
+        image_base64: b64,
+        is_spoof: isSpoof,
+        blur_score: isBlur ? 20.0 : null
+      };
+
+      try {
+        const res = await fetch('/attendance/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        const box = document.getElementById('verify-result-box');
+        box.style.display = 'block';
+        box.className = 'result-box ' + (data.decision === 'ACCEPT' ? 'accept' : (data.decision === 'REJECT' ? 'reject' : 'review'));
+
+        document.getElementById('verify-decision-title').innerText = `${data.decision === 'ACCEPT' ? '✅' : (data.decision === 'REJECT' ? '❌' : '⚠️')} Decision: ${data.decision}`;
+        
+        let msg = data.message;
+        if (data.decision === 'REJECT' && data.similarity_score < 0.50 && b64) {
+          msg += ` (Tip: If you haven't enrolled your webcam face for ${sId} yet, click "📸 Enroll My Face" above!)`;
+        }
+        document.getElementById('verify-message').innerText = msg;
+        document.getElementById('verify-door-status').innerText = data.door_unlocked ? '🔓 UNLOCKED (3.0s)' : '🔒 LOCKED';
+        document.getElementById('verify-att-status').innerText = data.attendance_status;
+        document.getElementById('verify-sim-score').innerText = (data.similarity_score * 100).toFixed(1) + '%';
+        document.getElementById('verify-live-score').innerText = (data.liveness_score * 100).toFixed(1) + '%';
+
+        const hcSpan = document.getElementById('verify-headcount-score');
+        const tgSpan = document.getElementById('verify-tailgating-status');
+        const hcCount = (data.headcount !== undefined) ? data.headcount : (data.face_detected ? 1 : 0);
+        if (hcSpan) {
+          hcSpan.innerText = `${hcCount} ${hcCount === 1 ? 'person' : 'persons'}`;
+          hcSpan.style.color = hcCount === 1 ? '#047857' : (hcCount > 1 ? '#b45309' : '#64748b');
+        }
+        if (tgSpan) {
+          if (data.tailgating_detected || hcCount > 1) {
+            tgSpan.innerHTML = '<span class="pill pill-danger" style="font-size: 0.72rem; padding: 0.1rem 0.4rem;">⚠️ Tailgating Detected</span>';
+          } else {
+            tgSpan.innerHTML = '<span class="pill pill-success" style="font-size: 0.72rem; padding: 0.1rem 0.4rem;">✅ Clear (Single Person)</span>';
+          }
+        }
+
+        const lockBadge = document.getElementById('door-lock-badge');
+        lockBadge.className = 'pill ' + (data.door_unlocked ? 'pill-success' : 'pill-danger');
+        lockBadge.innerText = data.door_unlocked ? 'Barrier Unlocked' : 'Barrier Locked';
+
+        // Audio Solenoid Actuation Chimes
+        if (data.decision === 'ACCEPT') {
+          playAccessGrantedSound();
+        } else if (data.decision === 'REJECT') {
+          playAccessDeniedSound();
+        }
+
+        loadPresenceState();
+        loadVerificationLogs();
+        checkStudentProfile();
+      } catch (err) {
+        alert("Verification failed: " + err);
+      }
+    }
+
+    // ==========================================
+    // Real-Time Camera View Headcount Audit
+    // ==========================================
+    async function auditRoomHeadcount() {
+      if (!webcamStream) {
+        alert('Please click "▶ Start Live Webcam" first to activate your camera!');
+        return;
+      }
+      const b64 = captureWebcamBase64();
+      if (!b64) {
+        alert('Could not capture frame from webcam.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/attendance/headcount', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_base64: b64 })
+        });
+        if (!res.ok) throw new Error('Headcount API request failed');
+        const data = await res.json();
+
+        let faceDetailsHtml = '';
+        if (data.all_faces && data.all_faces.length > 0) {
+          faceDetailsHtml = data.all_faces.map((f, i) => {
+            if (f.is_spoof) {
+              const r = (f.spoof_reasons && f.spoof_reasons.length > 0) ? f.spoof_reasons[0] : (f.spoof_type || 'Phone Screen');
+              return `• 🚫 [SPOOF ATTACK FILTERED] Face #${f.face_id || (i + 1)}: ${r} (Excluded from Headcount)`;
+            }
+            return `• 🟢 [LIVE HUMAN] Person #${f.face_id || (i + 1)}: Confidence ${(f.confidence * 100).toFixed(1)}%, Box [${f.box.join(', ')}]`;
+          }).join('\n');
+        } else {
+          faceDetailsHtml = '• No faces identified in view.';
+        }
+
+        const spoofInfo = data.spoof_count > 0 ? `\n• 🛡️ Blocked Presentation Attacks: ${data.spoof_count} phone/photo screen(s)` : '';
+        const msg = `👥 CAMERA VIEW HEADCOUNT REPORT\n` +
+          `----------------------------------------\n` +
+          `• Genuine Live Headcount: ${data.headcount} individual${data.headcount === 1 ? '' : 's'}${spoofInfo}\n` +
+          `• Crowd Density: ${data.density_category}\n` +
+          `• Status: ${data.status_description || 'Active camera view'}\n` +
+          `• Tailgating / Multi-Person: ${data.tailgating_warning ? '⚠️ Active Multi-Person in doorway' : '✅ Normal single person occupancy'}\n` +
+          `• Image Clarity: ${data.sharpness_score} Laplacian var\n` +
+          `• Timestamp: ${data.timestamp}\n\n` +
+          `Detailed Detections:\n${faceDetailsHtml}`;
+
+        alert(msg);
+      } catch (err) {
+        alert('Headcount audit error: ' + err.message);
+      }
+    }
+
+    // ==========================================
+    // Web Audio Synthesizer (Solenoid Sound FX)
+    // ==========================================
+    let audioEnabled = true;
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      const btn = document.getElementById('btn-audio-toggle');
+      if (btn) {
+        btn.innerText = audioEnabled ? '🔊 Chimes: ON' : '🔇 Chimes: OFF';
+      }
+    }
+
+    function playAccessGrantedSound() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        // Two-tone rising harmonic chime (C5 523.25Hz -> G5 783.99Hz)
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = 'sine';
+        osc2.type = 'sine';
+
+        osc1.frequency.setValueAtTime(523.25, now);
+        osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.12);
+
+        osc2.frequency.setValueAtTime(1046.5, now + 0.08);
+        osc2.frequency.exponentialRampToValueAtTime(1567.98, now + 0.22);
+
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.24, now + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now + 0.08);
+        osc1.stop(now + 0.45);
+        osc2.stop(now + 0.45);
+      } catch (e) {
+        console.warn('Audio playback error:', e);
+      }
+    }
+
+    function playAccessDeniedSound() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        // Double low warning buzz (160Hz saw wave)
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.setValueAtTime(130, now + 0.15);
+
+        gain.gain.setValueAtTime(0.20, now);
+        gain.gain.setValueAtTime(0.01, now + 0.12);
+        gain.gain.setValueAtTime(0.20, now + 0.16);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.38);
+      } catch (e) {
+        console.warn('Audio playback error:', e);
+      }
+    }
+
+    // ==========================================
+    // Student Profile Preview & Avatar Thumbnail
+    // ==========================================
+    let profileDebounceTimer = null;
+
+    function debounceCheckStudentProfile() {
+      if (profileDebounceTimer) clearTimeout(profileDebounceTimer);
+      profileDebounceTimer = setTimeout(checkStudentProfile, 280);
+    }
+
+    async function checkStudentProfile() {
+      const rawId = document.getElementById('verify-student-id').value.trim();
+      if (!rawId) return;
+      const sId = rawId.toUpperCase().replace(/\s+/g, '_');
+
+      try {
+        const res = await fetch(`/attendance/student/${encodeURIComponent(sId)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        updateStudentProfileUI(data);
+      } catch (e) {
+        console.warn('Profile fetch error:', e);
+      }
+    }
+
+    function updateStudentProfileUI(profile) {
+      const avatarBox = document.getElementById('student-avatar-box');
+      const nameSpan = document.getElementById('student-preview-name');
+      const pill = document.getElementById('student-enrollment-pill');
+      const sub = document.getElementById('student-enrollment-sub');
+
+      if (!profile) return;
+
+      if (nameSpan) nameSpan.innerText = profile.name;
+
+      if (profile.is_enrolled) {
+        if (pill) {
+          pill.className = 'pill pill-success';
+          pill.innerText = 'Enrolled';
+        }
+        if (sub) sub.innerText = profile.has_avatar ? 'Live face avatar registered' : 'Biometric embedding registered';
+
+        if (avatarBox) {
+          if (profile.avatar_base64) {
+            avatarBox.innerHTML = `<img src="${profile.avatar_base64}" alt="Face" style="width: 100%; height: 100%; object-fit: cover;">`;
+            avatarBox.style.borderColor = '#10b981';
+          } else {
+            avatarBox.innerHTML = `<span style="font-weight: 700; color: #047857;">${profile.student_id.slice(-3)}</span>`;
+            avatarBox.style.borderColor = '#10b981';
+          }
+        }
+      } else {
+        if (pill) {
+          pill.className = 'pill pill-warning';
+          pill.innerText = 'Not Enrolled';
+        }
+        if (sub) sub.innerText = 'Click "📸 Enroll My Face" to register';
+        if (avatarBox) {
+          avatarBox.innerHTML = `<span style="color: #94a3b8; font-size: 0.75rem;">?</span>`;
+          avatarBox.style.borderColor = '#cbd5e1';
+        }
+      }
+    }
+
+    // ==========================================
+    // One-Click CSV Attendance Export
+    // ==========================================
+    async function exportAttendanceCSV() {
+      try {
+        const res = await fetch('/attendance/presence');
+        if (!res.ok) throw new Error('Could not fetch presence data');
+        const data = await res.json();
+
+        const sess = data.session_id || 'Class_Session';
+        const room = data.room_id || 'hall_a';
+        const records = data.records || {};
+
+        let csv = 'Student ID,Session,Room,Attendance Status,Entry Timestamp,Verification Method,Similarity Score\r\n';
+
+        // Add verified records
+        Object.entries(records).forEach(([sId, rec]) => {
+          csv += `"${sId}","${sess}","${room}","${rec.status || 'Present'}","${rec.entry_time || ''}","${rec.method || 'Biometric 1:1'}","${rec.similarity_score ? (rec.similarity_score * 100).toFixed(1) + '%' : 'N/A'}"\r\n`;
+        });
+
+        // Add roster students who haven't entered yet (Absent)
+        const totalRoster = 40;
+        for (let i = 1; i <= totalRoster; i++) {
+          const sId = `STU_${String(i).padStart(3, '0')}`;
+          if (!records[sId]) {
+            csv += `"${sId}","${sess}","${room}","Absent","--","--","--"\r\n`;
+          }
+        }
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const nowStr = new Date().toISOString().slice(0, 10);
+        a.download = `${sess}_Attendance_Report_${nowStr}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('CSV Export failed: ' + err.message);
+      }
+    }
+
+
+    // Advance Period (Continuous Carry-Over)
+    async function advancePeriod() {
+      const pNum = prompt("Enter next period number (e.g. 2):", "2");
+      if (!pNum) return;
+
+      const payload = {
+        next_session_id: `CS102_PERIOD_${pNum}`,
+        course_name: `Computer Science 10${pNum}`,
+        start_time: "09:50:00",
+        end_time: "10:45:00"
+      };
+
+      try {
+        const res = await fetch('/attendance/period-change', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        alert(`Success! Advanced to ${payload.course_name}. ${data.carried_over_count} students carried over automatically!`);
+        loadPresenceState();
+      } catch (err) {
+        alert("Failed to advance period: " + err);
+      }
+    }
+
+    // Run WP 7 Passive Roster Audit
+    async function runPassiveAudit() {
+      try {
+        const res = await fetch('/attendance/passive-audit', { method: 'POST' });
+        const data = await res.json();
+
+        const box = document.getElementById('audit-alert');
+        box.style.display = 'block';
+        box.className = 'result-box accept';
+        box.innerHTML = `
+          <strong>📷 WP 7 Overhead Camera Roster Audit Completed:</strong><br>
+          • Faces Detected in Camera: <strong>${data.faces_detected_in_camera}</strong><br>
+          • In-Room Carry-Overs Confirmed: <strong>${data.confirmed_in_room_count}</strong><br>
+          • Teacher Advisories: <strong>${data.teacher_advisories.length ? data.teacher_advisories.join('<br>') : 'None (All in-room students confirmed!)'}</strong>
+        `;
+      } catch (err) {
+        alert("Passive audit failed: " + err);
+      }
+    }
+
+    // Load Manual Review Queue
+    async function loadReviewQueue() {
+      try {
+        const res = await fetch('/attendance/review-queue');
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('review-tbody');
+        tbody.innerHTML = '';
+
+        if (!data.items || data.items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No scans currently pending manual review.</td></tr>';
+          return;
+        }
+
+        data.items.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${item.student_id}</strong></td>
+            <td>${item.room_id}</td>
+            <td>${item.timestamp}</td>
+            <td>${(item.similarity_score * 100).toFixed(1)}%</td>
+            <td><span class="pill pill-warning">${item.reason}</span></td>
+            <td>
+              <button class="btn btn-primary btn-sm" onclick="resolveReview('${item.student_id}', 'approve_present')">Approve Present</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Failed to load review queue:", err);
+      }
+    }
+
+    // Resolve Review Item
+    async function resolveReview(studentId, action) {
+      try {
+        await fetch('/attendance/review-action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: "CS101_PERIOD_1",
+            student_id: studentId,
+            action: action
+          })
+        });
+        alert(`Student ${studentId} marked as Present!`);
+        loadReviewQueue();
+        loadPresenceState();
+      } catch (err) {
+        alert("Failed to resolve review: " + err);
+      }
+    }
+
+    // Test Gate Scenarios (Module 1)
+    async function testGateScenario(type) {
+      let payload = {};
+      const now = new Date().toISOString();
+
+      if (type === 'normal') {
+        payload = { person_id: "STU_101", location_id: "gate_main", timestamp: "2026-09-29T08:30:00", event_type: "entry" };
+      } else if (type === 'buddy') {
+        // Send scan at north gate first, then south gate
+        await fetch('/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ person_id: "STU_BUDDY", location_id: "gate_north", timestamp: "2026-09-29T09:00:00", event_type: "entry" })
+        });
+        payload = { person_id: "STU_BUDDY", location_id: "gate_south", timestamp: "2026-09-29T09:00:15", event_type: "entry" };
+      } else if (type === 'curfew') {
+        payload = { person_id: "STU_CURFEW", location_id: "admin_block", timestamp: "2026-09-29T02:30:00", event_type: "entry" };
+      } else if (type === 'denied') {
+        await fetch('/score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person_id: "STU_BRUTE", location_id: "lab_cs", timestamp: "2026-09-29T10:15:00", event_type: "denied" }) });
+        await fetch('/score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person_id: "STU_BRUTE", location_id: "lab_cs", timestamp: "2026-09-29T10:15:10", event_type: "denied" }) });
+        payload = { person_id: "STU_BRUTE", location_id: "lab_cs", timestamp: "2026-09-29T10:15:20", event_type: "denied" };
+      }
+
+      try {
+        const res = await fetch('/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        const box = document.getElementById('secops-result');
+        box.style.display = 'block';
+        box.className = 'result-box ' + (data.flagged ? 'reject' : 'accept');
+        box.innerHTML = `
+          <strong>${data.flagged ? '🔴 SECURITY INCIDENT DETECTED' : '🟢 SCAN AUTHORIZED (PASS)'}</strong><br>
+          • Evaluation Tier: <strong>${data.evaluation_tier}</strong><br>
+          • Confidence Level: <strong>${data.tier}</strong> (Risk Score: ${(data.risk_score * 100).toFixed(1)}%)<br>
+          • Physical Barrier: <strong>${data.turnstile_unlocked ? 'UNLOCKED' : 'LOCKED (ALARM DISPATCHED)'}</strong><br>
+          • Explanatory Signals: ${data.reasons.join(', ')}
+        `;
+      } catch (err) {
+        alert("Scan evaluation failed: " + err);
+      }
+    }
+
+    // Interactive Manual Buddy-Punching Attack Simulation
+    async function executeManualBuddyPunching() {
+      const studentId = document.getElementById('buddy-student-id')?.value.trim() || 'STU_BUDDY_001';
+      const loc1 = document.getElementById('buddy-loc-1')?.value || 'gate_north';
+      const loc2 = document.getElementById('buddy-loc-2')?.value || 'gate_south';
+      const deltaSec = parseInt(document.getElementById('buddy-delta')?.value || '15', 10);
+
+      const stepperBox = document.getElementById('buddy-stepper-box');
+      const step1El = document.getElementById('buddy-step-1');
+      const step2El = document.getElementById('buddy-step-2');
+
+      if (stepperBox) stepperBox.style.display = 'block';
+      if (step1El) step1El.innerHTML = `<strong>⏳ Executing Scan 1 at ${loc1}...</strong>`;
+      if (step2El) step2El.innerHTML = '';
+
+      const baseDate = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const t1 = `${baseDate.getFullYear()}-${pad(baseDate.getMonth() + 1)}-${pad(baseDate.getDate())}T${pad(baseDate.getHours())}:${pad(baseDate.getMinutes())}:${pad(baseDate.getSeconds())}`;
+
+      const date2 = new Date(baseDate.getTime() + deltaSec * 1000);
+      const t2 = `${date2.getFullYear()}-${pad(date2.getMonth() + 1)}-${pad(date2.getDate())}T${pad(date2.getHours())}:${pad(date2.getMinutes())}:${pad(date2.getSeconds())}`;
+
+      try {
+        // Step 1: Scan 1
+        const res1 = await fetch('/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            person_id: studentId,
+            location_id: loc1,
+            timestamp: t1,
+            event_type: "entry"
+          })
+        });
+        const data1 = await res1.json();
+
+        if (step1El) {
+          step1El.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span class="pill pill-success">STEP 1: SCAN AUTHORIZED</span>
+                <strong style="margin-left: 0.5rem; color: var(--dark); font-size: 0.9rem;">${studentId} scanned at ${loc1}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Timestamp: ${t1} | Risk: ${(data1.risk_score * 100).toFixed(1)}% | Turnstile: UNLOCKED</div>
+              </div>
+              <span style="font-size: 1.5rem;">🟢</span>
+            </div>
+          `;
+        }
+
+        // Short pause for realistic animation
+        await new Promise(r => setTimeout(r, 450));
+
+        // Step 2: Scan 2
+        const res2 = await fetch('/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            person_id: studentId,
+            location_id: loc2,
+            timestamp: t2,
+            event_type: "entry"
+          })
+        });
+        const data2 = await res2.json();
+
+        if (step2El) {
+          const isFlagged = data2.flagged;
+          step2El.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: ${isFlagged ? '#fef2f2' : '#ecfdf5'}; padding: 0.75rem; border-radius: 6px; border: 1px solid ${isFlagged ? '#fecaca' : '#a7f3d0'};">
+              <div>
+                <span class="pill ${isFlagged ? 'pill-danger' : 'pill-success'}">
+                  ${isFlagged ? 'STEP 2: IMPOSSIBLE TRAVEL BREACH DETECTED' : 'STEP 2: SCAN AUTHORIZED'}
+                </span>
+                <strong style="margin-left: 0.5rem; color: ${isFlagged ? '#991b1b' : '#065f46'}; font-size: 0.9rem;">
+                  ${studentId} scanned at ${loc2} (${deltaSec}s later)
+                </strong>
+                <div style="font-size: 0.8rem; color: ${isFlagged ? '#b91c1c' : 'var(--text-muted)'}; margin-top: 0.3rem;">
+                  • Physical Barrier: <strong>${data2.turnstile_unlocked ? 'UNLOCKED' : 'LOCKED (ALARM DISPATCHED)'}</strong><br>
+                  • Risk Score: <strong>${(data2.risk_score * 100).toFixed(1)}%</strong> (${data2.tier})<br>
+                  • Explanatory Signal: ${data2.reasons.join(', ')}
+                </div>
+              </div>
+              <span style="font-size: 1.8rem;">${isFlagged ? '🚨' : '🟢'}</span>
+            </div>
+          `;
+        }
+
+        if (data2.flagged) {
+          playAccessDeniedSound();
+        } else {
+          playAccessGrantedSound();
+        }
+
+        loadPresenceState();
+        loadVerificationLogs();
+      } catch (err) {
+        alert("Buddy-punching simulation failed: " + err);
+      }
+    }
+
+    // Check OpenVINO status
+    async function checkOpenVINOStatus() {
+      try {
+        const res = await fetch('/openvino/status');
+        const data = await res.json();
+        const badge = document.getElementById('openvino-badge');
+        if (badge && data) {
+          if (data.active) {
+            badge.style.background = '#e0f2fe';
+            badge.style.color = '#0369a1';
+            badge.style.borderColor = '#7dd3fc';
+            badge.innerHTML = `⚡ OpenVINO: ${data.target_device} (${data.device_full_name ? data.device_full_name.split('@')[0].trim() : 'Intel CPU'})`;
+            badge.title = `OpenVINO ${data.openvino_version} | SFace: ${data.sface_accelerated ? 'Accelerated' : 'OpenCV'} | MobileNet: ${data.mobilenet_accelerated ? 'Accelerated' : 'PyTorch'}`;
+          } else {
+            badge.style.background = '#f1f5f9';
+            badge.style.color = '#64748b';
+            badge.innerHTML = '⚙️ PyTorch / OpenCV Native';
+            badge.title = 'OpenVINO acceleration idle or fallback active';
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch OpenVINO status:', e);
+      }
+    }
+
+    // ==========================================
+    // Tab 5: Classroom Verification & Entry Logs
+    // ==========================================
+    let verificationLogsData = [];
+    let logsAutoRefreshInterval = null;
+    let isLogsAutoRefreshOn = true;
+
+    async function loadVerificationLogs() {
+      try {
+        const outcome = document.getElementById('log-outcome-filter')?.value || 'all';
+        const room = document.getElementById('log-room-filter')?.value || 'all';
+        const search = document.getElementById('log-search-input')?.value || '';
+
+        const params = new URLSearchParams();
+        if (outcome !== 'all') params.append('status_filter', outcome);
+        if (room !== 'all') params.append('room_id', room);
+        if (search.trim()) params.append('search', search.trim());
+        params.append('limit', '250');
+
+        const res = await fetch('/attendance/logs?' + params.toString());
+        if (!res.ok) return;
+        const data = await res.json();
+
+        verificationLogsData = data.items || [];
+
+        // Update stats
+        const totalEl = document.getElementById('log-stat-total');
+        const acceptedEl = document.getElementById('log-stat-accepted');
+        const rejectedEl = document.getElementById('log-stat-rejected');
+        const reviewEl = document.getElementById('log-stat-review');
+
+        if (totalEl) totalEl.innerText = data.total_count || 0;
+        if (acceptedEl) acceptedEl.innerText = data.accepted_count || 0;
+        if (rejectedEl) rejectedEl.innerText = data.rejected_count || 0;
+        if (reviewEl) reviewEl.innerText = data.review_count || 0;
+
+        // Top bar stat card update
+        const statLogCount = document.getElementById('stat-log-count');
+        const statLogSub = document.getElementById('stat-log-sub');
+        if (statLogCount) statLogCount.innerText = data.total_count || 0;
+        if (statLogSub) statLogSub.innerText = `${data.accepted_count || 0} Accepted / Unlocked`;
+
+        renderVerificationLogs(verificationLogsData);
+      } catch (err) {
+        console.error('Failed to load verification logs:', err);
+      }
+    }
+
+    function renderVerificationLogs(logs) {
+      const tbody = document.getElementById('logs-tbody');
+      if (!tbody) return;
+
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+              No classroom entry logs match the selected filter.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(item => {
+        const isAccept = item.decision === 'ACCEPT';
+        const isReject = item.decision === 'REJECT';
+
+        let decisionBadge = '';
+        if (isAccept) {
+          decisionBadge = `<span class="pill pill-success" style="font-weight: 700;">✅ ACCEPTED (${item.door_unlocked ? 'Unlocked' : 'Normal'})</span>`;
+        } else if (isReject) {
+          decisionBadge = `<span class="pill pill-danger" style="font-weight: 700;">❌ REJECTED (Locked)</span>`;
+        } else {
+          decisionBadge = `<span class="pill pill-warning" style="font-weight: 700;">⚠️ MANUAL REVIEW</span>`;
+        }
+
+        // Sim score bar
+        const simPct = (item.similarity_score !== undefined) ? (item.similarity_score * 100).toFixed(1) : (item.similarity_pct || 0);
+        const simClass = simPct >= 72 ? 'sim-high' : (simPct >= 55 ? 'sim-mid' : 'sim-low');
+
+        // Liveness score
+        const liveScore = (item.liveness_score !== undefined) ? item.liveness_score : 1.0;
+        const isSpoof = Boolean(item.is_spoof || liveScore < 0.65);
+        let liveBadge = '';
+        if (isSpoof) {
+          liveBadge = `<span class="pill pill-danger" style="font-size: 0.72rem;">🚫 Spoof (${(liveScore * 100).toFixed(0)}%)</span>`;
+        } else {
+          liveBadge = `<span class="pill pill-success" style="font-size: 0.72rem;">🟢 Live (${(liveScore * 100).toFixed(0)}%)</span>`;
+        }
+
+        // Attendance status pill
+        let attPill = '<span class="pill pill-neutral">Absent</span>';
+        if (item.attendance_status === 'Present') attPill = '<span class="pill pill-success">Present</span>';
+        else if (item.attendance_status === 'Late') attPill = '<span class="pill pill-warning">Late</span>';
+        else if (item.attendance_status === 'Review') attPill = '<span class="pill pill-warning">Review</span>';
+
+        // Time format
+        const tsParts = item.timestamp ? item.timestamp.split('T') : ['-', '-'];
+        const dateStr = tsParts[0];
+        const timeStr = tsParts[1] ? tsParts[1].substring(0, 8) : item.timestamp;
+
+        // Tailgating icon
+        const tgIcon = item.tailgating_detected ? ' <span title="Tailgating Alert: Multi-person doorway transit" style="color: #ef4444; font-weight: bold;">👥⚠️</span>' : '';
+
+        return `
+          <tr style="cursor: pointer;" onclick="inspectLogDetails('${item.log_id}')" title="Click to inspect complete 1:1 verification telemetry">
+            <td>
+              <div style="font-weight: 600; color: var(--dark); font-family: 'Outfit', sans-serif;">${timeStr}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">${dateStr}</div>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span style="font-size: 1.1rem;">👤</span>
+                <div>
+                  <strong style="color: var(--primary);">${item.student_id}</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">${item.student_name || 'Enrolled Student'}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div style="font-weight: 500;">${item.room_name || item.room_id}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); font-family: monospace;">${item.room_id}${tgIcon}</div>
+            </td>
+            <td>${decisionBadge}</td>
+            <td>
+              <span>${simPct}%</span>
+              <div class="sim-bar-bg" title="1:1 Cosine Similarity vs 72% Accept Cutoff">
+                <div class="sim-bar-fill ${simClass}" style="width: ${Math.min(100, Math.max(0, simPct))}%;"></div>
+              </div>
+            </td>
+            <td>${liveBadge}</td>
+            <td><span style="font-size: 0.8rem; color: var(--text-muted);">${item.method || 'Webcam'}</span></td>
+            <td>${attPill}</td>
+            <td style="max-width: 200px; font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${item.message || item.reason_code || '-'}
+            </td>
+            <td>
+              <button class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="event.stopPropagation(); inspectLogDetails('${item.log_id}')">
+                🔍 Details
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function handleLogFilterChange() {
+      loadVerificationLogs();
+    }
+
+    function resetLogFilters() {
+      const search = document.getElementById('log-search-input');
+      const outcome = document.getElementById('log-outcome-filter');
+      const room = document.getElementById('log-room-filter');
+      if (search) search.value = '';
+      if (outcome) outcome.value = 'all';
+      if (room) room.value = 'all';
+      loadVerificationLogs();
+    }
+
+    function toggleLogsAutoRefresh() {
+      const btn = document.getElementById('btn-toggle-autorefresh');
+      const indicator = document.getElementById('logs-live-indicator');
+      if (isLogsAutoRefreshOn) {
+        clearInterval(logsAutoRefreshInterval);
+        logsAutoRefreshInterval = null;
+        isLogsAutoRefreshOn = false;
+        if (btn) btn.innerText = '⏱️ Auto-Refresh: OFF';
+        if (indicator) {
+          indicator.innerText = '○ Paused';
+          indicator.style.background = '#f1f5f9';
+          indicator.style.color = '#64748b';
+        }
+      } else {
+        logsAutoRefreshInterval = setInterval(() => {
+          loadVerificationLogs();
+        }, 4000);
+        isLogsAutoRefreshOn = true;
+        if (btn) btn.innerText = '⏱️ Auto-Refresh: ON (4s)';
+        if (indicator) {
+          indicator.innerText = '● Live Stream Active';
+          indicator.style.background = '#ecfdf5';
+          indicator.style.color = '#047857';
+        }
+      }
+    }
+
+    function exportLogsCSV() {
+      window.location.href = '/attendance/logs/export';
+    }
+
+    function inspectLogDetails(logId) {
+      const log = verificationLogsData.find(x => x.log_id === logId);
+      if (!log) return;
+
+      const modal = document.getElementById('log-detail-modal');
+      const body = document.getElementById('modal-body');
+      if (!modal || !body) return;
+
+      const isAccept = log.decision === 'ACCEPT';
+      const isReject = log.decision === 'REJECT';
+
+      body.innerHTML = `
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem; padding: 1rem; background: ${isAccept ? '#ecfdf5' : (isReject ? '#fef2f2' : '#fffbeb')}; border-radius: 8px; border: 1px solid ${isAccept ? '#a7f3d0' : (isReject ? '#fecaca' : '#fde68a')};">
+          <div style="font-size: 2.2rem;">${isAccept ? '✅' : (isReject ? '❌' : '⚠️')}</div>
+          <div style="flex: 1;">
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--dark);">
+              ${log.decision} — ${log.door_unlocked ? 'Door Barrier UNLOCKED' : 'Door Barrier LOCKED'}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+              ${log.message || 'No additional telemetry message'}
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.85rem; margin-bottom: 1.25rem;">
+          <div style="padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+            <strong style="color: var(--text-muted); display: block; font-size: 0.75rem;">STUDENT IDENTITY</strong>
+            <span style="font-weight: 600; color: var(--dark); font-size: 0.95rem;">${log.student_name || log.student_id}</span>
+            <div style="font-size: 0.75rem; color: var(--primary); font-family: monospace;">${log.student_id}</div>
+          </div>
+          <div style="padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+            <strong style="color: var(--text-muted); display: block; font-size: 0.75rem;">CLASSROOM / LOCATION</strong>
+            <span style="font-weight: 600; color: var(--dark); font-size: 0.95rem;">${log.room_name || log.room_id}</span>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">Room ID: ${log.room_id}</div>
+          </div>
+          <div style="padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+            <strong style="color: var(--text-muted); display: block; font-size: 0.75rem;">EVENT TIMESTAMP</strong>
+            <span style="font-weight: 600; color: var(--dark);">${log.timestamp}</span>
+          </div>
+          <div style="padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+            <strong style="color: var(--text-muted); display: block; font-size: 0.75rem;">VERIFICATION METHOD</strong>
+            <span style="font-weight: 600; color: var(--dark);">${log.method || 'Webcam'}</span>
+          </div>
+          <div style="padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+            <strong style="color: var(--text-muted); display: block; font-size: 0.75rem;">1:1 COSINE MATCH</strong>
+            <span style="font-weight: 700; color: ${log.similarity_score >= 0.72 ? '#047857' : '#dc2626'}; font-size: 1rem;">
+              ${(log.similarity_score * 100).toFixed(1)}%
+            </span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);"> (Threshold: ≥ 72.0%)</span>
+          </div>
+          <div style="padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+            <strong style="color: var(--text-muted); display: block; font-size: 0.75rem;">ANTI-SPOOF LIVENESS</strong>
+            <span style="font-weight: 700; color: ${log.liveness_score >= 0.65 ? '#047857' : '#dc2626'}; font-size: 1rem;">
+              ${(log.liveness_score * 100).toFixed(1)}%
+            </span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);"> (${log.is_spoof ? '🚨 Attack' : '🟢 Real'})</span>
+          </div>
+          <div style="padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+            <strong style="color: var(--text-muted); display: block; font-size: 0.75rem;">DOOR HEADCOUNT & CROWD</strong>
+            <span style="font-weight: 600; color: var(--dark);">${log.headcount || 1} Person(s) in View</span>
+            ${log.tailgating_detected ? '<div style="color: #ef4444; font-size: 0.75rem; font-weight: 600;">⚠️ Tailgating Detected</div>' : ''}
+          </div>
+          <div style="padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+            <strong style="color: var(--text-muted); display: block; font-size: 0.75rem;">PERIOD ATTENDANCE RECORD</strong>
+            <span style="font-weight: 600; color: var(--dark);">${log.attendance_status || 'Absent'}</span>
+          </div>
+        </div>
+
+        <div style="padding: 0.75rem; background: #f1f5f9; border-radius: 6px; font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">
+          Log ID: ${log.log_id} | Reason Code: ${log.reason_code} | Sharpness: ${log.sharpness_score} Laplacian
+        </div>
+      `;
+
+      modal.classList.add('active');
+    }
+
+    function closeLogModal() {
+      const modal = document.getElementById('log-detail-modal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function handleModalBackdropClick(e) {
+      if (e.target && e.target.id === 'log-detail-modal') {
+        closeLogModal();
+      }
+    }
+
+    // Initial Load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Auto-initialize real-time clock in Door Terminal
+      setCurrentTimestamp(true);
+      const tsInput = document.getElementById('verify-timestamp');
+      if (tsInput) {
+        tsInput.addEventListener('input', () => {
+          tsInput.dataset.manualEdit = "true";
+          const badge = document.getElementById('live-clock-badge');
+          if (badge) {
+            badge.innerText = '✏️ Custom Time';
+            badge.style.background = '#fef3c7';
+            badge.style.color = '#92400e';
+            badge.style.borderColor = '#fde68a';
+          }
+        });
+      }
+
+      // Sync live time every 5 seconds if not manually overridden
+      setInterval(() => {
+        if (tsInput && tsInput.dataset.manualEdit !== "true" && document.activeElement !== tsInput) {
+          setCurrentTimestamp(false);
+        }
+      }, 5000);
+
+      loadPresenceState();
+      loadVerificationLogs();
+      checkStudentProfile();
+      checkOpenVINOStatus();
+
+      // Auto-refresh logs in background every 4s
+      if (isLogsAutoRefreshOn) {
+        logsAutoRefreshInterval = setInterval(() => {
+          loadVerificationLogs();
+        }, 4000);
+      }
+    });
+  </script>
+</body>
+</html>

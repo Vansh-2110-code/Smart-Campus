@@ -1,0 +1,88 @@
+--- PAGE 1 ---
+ML Work Brief — Irregularity
+Flagging
+Campus Automation System, Phase 1: Attendance & Access
+Management
+Scope note first: the actual fingerprint/biometric matching is handled by the
+scanner vendor's own firmware/SDK — that's not something this team builds.
+The ML-relevant feature in Phase 1 is automatic flagging of irregular entries
+(late entries, unrecognized access, duplicate/impossible-pattern scans, etc.).
+This brief covers what you can build for that feature before hardware is
+finalized.
+The Shared Contract
+Everything below is designed against a generic scan-event schema — the
+same one the backend team is building to, so this work isn't hardware-specific
+and doesn't need to be redone once a vendor is picked:
+{
+  "person_id": "string",
+  "location_id": "string",
+  "timestamp": "ISO 8601",
+  "event_type": "entry | exit | denied"
+}
+Build and test against this shape. When hardware is confirmed, real events
+should slot into this same schema — if they don't, that's a sign the contract
+needs revisiting, not that the ML pipeline does.
+1. Problem Scoping (do this first)
+Break "irregular" into concrete categories — draft candidates:
+Late entry beyond a threshold
+Unrecognized/failed access attempt
+ML  W ork Brief — Irregularity Flagging
+1
+--- PAGE 2 ---
+Same card/person scanned at two locations within an impossible time
+window (buddy-punching)
+Access to a location outside someone's normal pattern
+For each category, decide rule vs. model:
+Fixed-threshold logic (e.g. "more than 10 minutes late") →  rules-based,
+no ML needed
+Deviation from a person's own historical pattern →  this is where a model
+actually earns its place
+Recommended Phase 1 scope: ship rules-based flagging first; treat true
+behavioral anomaly detection as a Phase 1.5/2 enhancement once real pilot
+data exists to train on. Flag this framing back to the PM/team lead explicitly, so
+"AI/ML" isn't over-promised for launch.
+2. Data Pipeline & Synthetic Data
+Build a synthetic event generator: realistic per-person patterns (typical
+arrival time, usual classrooms/labs) with deliberately injected anomalies
+(duplicate scans, odd-hour access, impossible geography, first-time-at-
+location events)
+Build the feature computation layer from timestamp + location + person_id
+alone:
+Rolling average arrival time per person
+Deviation from personal baseline
+Access frequency per hour/location
+First-time-at-this-location flag
+None of this depends on which vendor is chosen — it's all derived from the
+shared schema above
+3. Model Development
+Prototype baseline anomaly-detection approaches against the synthetic
+dataset (isolation forest, one-class SVM, simple z-score deviation — pick
+based on what the synthetic patterns actually need)
+ML  W ork Brief — Irregularity Flagging
+2
+--- PAGE 3 ---
+Design flag output as tiered confidence ("review suggested" vs. "high-
+confidence issue"), not a binary yes/no — reduces false-positive fatigue, which
+is the fastest way this feature loses trust with faculty/admin
+4. Evaluation Framework
+Define acceptable false-positive / false-negative tolerance before building
+further — this needs sign-off from PM/stakeholders, not just an engineering
+call
+Plan a "shadow mode": once pilot data starts flowing, run the model
+logging-only (no live alerts) for a calibration period before it's trusted to flag
+anything for real
+5. MLOps Groundwork
+Decide real-time (per scan) vs. batch (nightly) inference — the proposal's
+"real-time dashboard" requirement points toward real-time, which affects infra
+choice now regardless of vendor
+Stand up a scoring service against the synthetic event stream, so swapping
+in real events later is a data-source change, not a rebuild
+What's Still Blocked on Hardware
+Real calibration/training data — only comes from the live pilot
+Whatever confidence signal the vendor's SDK actually returns — a numeric
+match-confidence score is a far richer feature than a bare matched/not-
+matched boolean, and this isn't known until a vendor is confirmed
+Any liveness/signal-quality metadata the device might expose — useful if
+available, unknown until then
+ML  W ork Brief — Irregularity Flagging
+3
