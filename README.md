@@ -171,10 +171,12 @@ The anomaly detection engine was benchmarked across multiple model paradigms ove
 
 | Model / Architecture | Precision | Recall | False Positive Rate (FPR) | F1-Score | ROC-AUC | Inference Latency |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Two-Tier Hybrid Ensemble (Our System)** | **92.4%** | **99.03%** | **0.21%** | **0.956** | **0.9992** | **< 1.8 ms** |
-| Isolation Forest (Calibrated) | 88.7% | 94.2% | 0.85% | 0.914 | 0.9880 | ~1.5 ms |
-| One-Class SVM (RBF Kernel) | 68.3% | 79.1% | 4.30% | 0.733 | 0.9120 | ~8.4 ms |
-| Personal Z-Score Baseline | 61.2% | 71.5% | 5.80% | 0.659 | 0.8650 | < 0.5 ms |
+| **Hybrid Stacking Ensemble (Production Selected)** | **92.73%** | **99.03%** | **0.21%** | **0.9577** | **0.9984** | **0.020 ms** |
+| Next-Gen XGBoost Classifier (Gradient Boosted Trees) | 98.06% | 98.06% | 0.05% | 0.9806 | 0.9998 | 0.002 ms |
+| Next-Gen PU Random Forest | 88.89% | 93.20% | 0.32% | 0.9100 | 0.9996 | 0.002 ms |
+| Statistical Rules & Z-Score Baseline | 93.14% | 92.23% | 0.18% | 0.9268 | 0.9645 | 0.172 ms |
+| Isolation Forest (Standalone) | 84.31% | 83.50% | 0.42% | 0.8390 | 0.9980 | 0.009 ms |
+| One-Class SVM (RBF Kernel) | 84.93% | 60.19% | 0.29% | 0.7045 | 0.9542 | 0.013 ms |
 
 ### Performance Visualizations
 
@@ -233,6 +235,7 @@ smart-campus/
 ├── synthetic_generator.py                # Synthetic campus routines and anomaly injector
 ├── test_service.py                       # 28-test Pytest verification suite
 ├── BEGINNER_GUIDE.md                     # Guided walkthrough for new developers
+├── HARDWARE_REQUIREMENTS_AND_SELECTION_GUIDE.md # Complete hardware BOM, best & alt models, pricing, and deep technical justification
 ├── PROJECT_GUIDE_ADVANCED.md             # Deep-dive architectural specification
 ├── REPORT.md                             # Comprehensive technical evaluation report
 └── SMART_CAMPUS_PRD_TRD_SYSTEM_FLOW.md  # Formal PRD & TRD specification

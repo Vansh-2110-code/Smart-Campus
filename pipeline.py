@@ -56,6 +56,7 @@ from sklearn.metrics import (
 )
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
+import xgboost as xgb
 from synthetic_generator import CAMPUS_LOCATIONS, get_min_transit_time
 
 
@@ -348,6 +349,21 @@ class CampusAnomalyEngine:
             random_state=42,
             n_jobs=1,
         )
+        try:
+            self.xgb_model: Optional[Any] = xgb.XGBClassifier(
+                n_estimators=160,
+                max_depth=4,
+                learning_rate=0.08,
+                scale_pos_weight=3.5,
+                subsample=0.85,
+                colsample_bytree=0.85,
+                random_state=42,
+                eval_metric="logloss",
+                n_jobs=1,
+            )
+        except Exception:
+            self.xgb_model = None
+
         self.p_cut_iso: float = -0.04
         self.is_fitted = False
 
@@ -358,10 +374,14 @@ class CampusAnomalyEngine:
         raw_scores = self.isolation_forest.decision_function(X_mat)
         self.p_cut_iso = float(np.percentile(raw_scores, self.contamination * 100))
 
-        if "anomaly_label" in X.columns and self.next_gen_model is not None:
+        if "anomaly_label" in X.columns:
             y = (X["anomaly_label"] == "anomaly").astype(int).values
-            self.next_gen_model.fit(X_mat, y)
-            print(f"[Engine] Next-Gen PU Random Forest fitted on {len(X_mat):,} samples ({y.sum():,} anomalies).")
+            if self.next_gen_model is not None:
+                self.next_gen_model.fit(X_mat, y)
+                print(f"[Engine] Next-Gen PU Random Forest fitted on {len(X_mat):,} samples ({y.sum():,} anomalies).")
+            if self.xgb_model is not None:
+                self.xgb_model.fit(X_mat, y)
+                print(f"[Engine] Next-Gen XGBoost Anomaly Classifier fitted on {len(X_mat):,} samples ({y.sum():,} anomalies).")
 
         self.is_fitted = True
         print(f"[Engine] Isolation Forest fitted on {len(X_mat):,} samples (percentile cutoff: {self.p_cut_iso:.4f}).")
@@ -428,7 +448,7 @@ class CampusAnomalyEngine:
 
     def predict_single(self, feat_dict: Dict[str, float]) -> Dict[str, Any]:
         """
-        Evaluates a single feature vector through the production Hybrid Ensemble
+        Evaluates a single feature vector through the production Hybrid Stacking Ensemble
         with sub-millisecond execution latency.
         """
         if not self.is_fitted:
@@ -444,17 +464,32 @@ class CampusAnomalyEngine:
         # 2. Deterministic Statistical Rules
         stat_risk, stat_reasons = self.compute_statistical_risk(feat_dict)
 
-        # 3. Next-Gen PU Model Evaluation
-        ng_risk = 0.0
+        # 3. Supervised Model Risk Scores (Random Forest + XGBoost)
+        rf_risk = 0.0
         if self.next_gen_model is not None:
-            ng_risk = float(self.next_gen_model.predict_proba(feat_vec)[0, 1])
+            rf_risk = float(self.next_gen_model.predict_proba(feat_vec)[0, 1])
 
-        # 4. Calibrated Hybrid Fusion with False Alarm Suppression for benign single denials
-        final_risk = max(float(stat_risk), float(if_risk * 0.70), float(ng_risk))
+        xgb_risk = 0.0
+        if self.xgb_model is not None:
+            xgb_risk = float(self.xgb_model.predict_proba(feat_vec)[0, 1])
+
+        # 4. Multi-model synergistic stacking blend
+        if self.xgb_model is not None and self.next_gen_model is not None:
+            ml_blend = 0.55 * xgb_risk + 0.35 * rf_risk + 0.10 * (if_risk * 0.70)
+        elif self.xgb_model is not None:
+            ml_blend = 0.85 * xgb_risk + 0.15 * (if_risk * 0.70)
+        elif self.next_gen_model is not None:
+            ml_blend = max(rf_risk, if_risk * 0.70)
+        else:
+            ml_blend = if_risk * 0.70
+
+        # Calibrated Hybrid Fusion with physics safeguards
+        final_risk = max(float(stat_risk), float(ml_blend))
+
         # Suppress single isolated denial false alarm if no other risk factor is present
         d_cnt = feat_dict.get("denied_count_5m", 0.0)
         is_d = feat_dict.get("is_denied", 0.0)
-        if d_cnt < 2.0 and (is_d > 0.5 or d_cnt == 1.0) and stat_risk < 0.60 and ng_risk < 0.50:
+        if d_cnt < 2.0 and (is_d > 0.5 or d_cnt == 1.0) and stat_risk < 0.60 and ml_blend < 0.50:
             final_risk = min(final_risk, 0.45)
 
         # 5. Reasoning synthesis
@@ -480,7 +515,9 @@ class CampusAnomalyEngine:
             "risk_score": round(final_risk, 4),
             "if_risk": round(float(if_risk), 4),
             "stat_risk": round(float(stat_risk), 4),
-            "ng_risk": round(float(ng_risk), 4),
+            "rf_risk": round(float(rf_risk), 4),
+            "xgb_risk": round(float(xgb_risk), 4),
+            "ng_risk": round(float(max(rf_risk, xgb_risk)), 4),
             "reasons": reasons,
         }
 
@@ -490,7 +527,15 @@ class CampusAnomalyEngine:
         raw_s = self.isolation_forest.decision_function(X_mat)
         if_risks = 1.0 / (1.0 + np.exp(24.0 * (raw_s - self.p_cut_iso)))
 
-        ng_risks = self.next_gen_model.predict_proba(X_mat)[:, 1] if self.next_gen_model is not None else np.zeros(len(X))
+        rf_risks = self.next_gen_model.predict_proba(X_mat)[:, 1] if self.next_gen_model is not None else np.zeros(len(X))
+        xgb_risks = self.xgb_model.predict_proba(X_mat)[:, 1] if self.xgb_model is not None else np.zeros(len(X))
+
+        if self.xgb_model is not None and self.next_gen_model is not None:
+            ml_blend = 0.55 * xgb_risks + 0.35 * rf_risks + 0.10 * (if_risks * 0.70)
+        elif self.xgb_model is not None:
+            ml_blend = 0.85 * xgb_risks + 0.15 * (if_risks * 0.70)
+        else:
+            ml_blend = np.maximum(if_risks * 0.70, rf_risks)
 
         # Vectorized statistical evaluation
         impos = ((X["is_impossible_transit"] > 0.5) & (X["elapsed_seconds"] < 60.0)) | (X["is_paired_impossible_transit"] > 0.5) | ((X["transit_violation_ratio"] >= 3.0) & (X["elapsed_seconds"] < 60.0))
@@ -506,8 +551,8 @@ class CampusAnomalyEngine:
         off = (X["is_off_hours"] > 0.5) & ~impos & ~curfew & ~denied & ~spatial
         stat_scores = np.where(off, np.clip(0.82 + X["hours_from_band"] * 0.04, 0.82, 0.92), stat_scores)
 
-        final_scores = np.maximum(stat_scores, np.maximum(if_risks * 0.70, ng_risks))
-        suppress_mask = (X["denied_count_5m"] < 2.0) & ((X["is_denied"] > 0.5) | (X["denied_count_5m"] == 1.0)) & (stat_scores < 0.60) & (ng_risks < 0.50)
+        final_scores = np.maximum(stat_scores, ml_blend)
+        suppress_mask = (X["denied_count_5m"] < 2.0) & ((X["is_denied"] > 0.5) | (X["denied_count_5m"] == 1.0)) & (stat_scores < 0.60) & (ml_blend < 0.50)
         final_scores[suppress_mask] = np.minimum(final_scores[suppress_mask], 0.45)
 
         preds = (final_scores >= 0.60).astype(int)
@@ -519,6 +564,8 @@ class CampusAnomalyEngine:
         joblib.dump(self.isolation_forest, os.path.join(model_dir, "isolation_forest.joblib"))
         if self.next_gen_model is not None:
             joblib.dump(self.next_gen_model, os.path.join(model_dir, "next_gen_model.joblib"))
+        if self.xgb_model is not None:
+            joblib.dump(self.xgb_model, os.path.join(model_dir, "xgboost_model.joblib"))
         meta = {
             "contamination": self.contamination,
             "feature_columns": FEATURE_COLUMNS,
@@ -539,6 +586,13 @@ class CampusAnomalyEngine:
         ng_path = os.path.join(model_dir, "next_gen_model.joblib")
         if os.path.exists(ng_path):
             self.next_gen_model = joblib.load(ng_path)
+
+        xgb_path = os.path.join(model_dir, "xgboost_model.joblib")
+        if os.path.exists(xgb_path):
+            try:
+                self.xgb_model = joblib.load(xgb_path)
+            except Exception as e:
+                print(f"[Engine WARNING] Could not load XGBoost model: {e}")
 
         meta_path = os.path.join(model_dir, "feature_stats.json")
         if os.path.exists(meta_path):
@@ -676,7 +730,40 @@ def run_benchmarks(train_df: pd.DataFrame, test_df: pd.DataFrame) -> Dict[str, A
         "cm": cm_rf.tolist(),
     }
 
-    # 5. Hybrid Calibrated Ensemble (Production Selection - Vectorized Inference)
+    # 5. Next-Gen XGBoost Anomaly Classifier (Extreme Gradient Boosting)
+    t0 = time.time()
+    xgb_clf = xgb.XGBClassifier(
+        n_estimators=160,
+        max_depth=4,
+        learning_rate=0.08,
+        scale_pos_weight=3.5,
+        subsample=0.85,
+        colsample_bytree=0.85,
+        random_state=42,
+        eval_metric="logloss",
+        n_jobs=1,
+    )
+    xgb_clf.fit(X_train.values, y_train.values)
+    xgb_train_time = time.time() - t0
+
+    t0 = time.time()
+    xgb_probs = xgb_clf.predict_proba(X_test.values)[:, 1]
+    xgb_eval_time = time.time() - t0
+    xgb_preds = (xgb_probs >= 0.40).astype(int)
+    cm_xgb = confusion_matrix(y_test, xgb_preds)
+    results["Next-Gen XGBoost Classifier"] = {
+        "precision": round(float(precision_score(y_test, xgb_preds, zero_division=0)), 4),
+        "recall": round(float(recall_score(y_test, xgb_preds, zero_division=0)), 4),
+        "f1": round(float(f1_score(y_test, xgb_preds, zero_division=0)), 4),
+        "roc_auc": round(float(roc_auc_score(y_test, xgb_probs)), 4),
+        "fpr": round(float(cm_xgb[0, 1] / (cm_xgb[0, 0] + cm_xgb[0, 1])), 4),
+        "fnr": round(float(cm_xgb[1, 0] / (cm_xgb[1, 0] + cm_xgb[1, 1])), 4),
+        "train_time_sec": round(xgb_train_time, 3),
+        "latency_ms": round((xgb_eval_time / len(test_df)) * 1000, 3),
+        "cm": cm_xgb.tolist(),
+    }
+
+    # 6. Hybrid Calibrated Stacking Ensemble (Production Selection - Vectorized Inference)
     t0 = time.time()
     hybrid_engine = CampusAnomalyEngine(contamination=0.026)
     hybrid_engine.fit(train_df)
@@ -700,18 +787,10 @@ def run_benchmarks(train_df: pd.DataFrame, test_df: pd.DataFrame) -> Dict[str, A
     }
 
     # Print comparative matrix
-    print(f"{'Model':<32} | {'Precision':<9} | {'Recall':<6} | {'F1':<6} | {'ROC-AUC':<7} | {'FPR':<6} | {'Latency':<8}")
-    print("-" * 85)
+    print(f"{'Model':<34} | {'Precision':<9} | {'Recall':<6} | {'F1':<6} | {'ROC-AUC':<7} | {'FPR':<6} | {'Latency':<8}")
+    print("-" * 87)
     for model_name, m in results.items():
-        print(f"{model_name:<32} | {m['precision']:<9.4f} | {m['recall']:<6.4f} | {m['f1']:<6.4f} | {m['roc_auc']:<7.4f} | {m['fpr']*100:<5.2f}% | {m['latency_ms']:.3f} ms")
-
-    return results
-
-    # Print comparative matrix
-    print(f"{'Model':<32} | {'Precision':<9} | {'Recall':<6} | {'F1':<6} | {'ROC-AUC':<7} | {'FPR':<6}")
-    print("-" * 75)
-    for model_name, m in results.items():
-        print(f"{model_name:<32} | {m['precision']:<9.4f} | {m['recall']:<6.4f} | {m['f1']:<6.4f} | {m['roc_auc']:<7.4f} | {m['fpr']*100:<5.2f}%")
+        print(f"{model_name:<34} | {m['precision']:<9.4f} | {m['recall']:<6.4f} | {m['f1']:<6.4f} | {m['roc_auc']:<7.4f} | {m['fpr']*100:<5.2f}% | {m['latency_ms']:.3f} ms")
 
     return results
 

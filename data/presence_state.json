@@ -11,15 +11,15 @@
   "session_attendance": {
     "CS102_PERIOD_2": {
       "STU_001": {
-        "status": "Present",
-        "entry_time": "2026-10-15T08:33:38.036898",
-        "method": "Carry-Over (In-Room)",
-        "similarity_score": 1.0,
-        "is_carryover": true
+        "status": "Review",
+        "entry_time": "2026-09-29T09:05:00",
+        "method": "rfid_card",
+        "similarity_score": 0.6240953207015991,
+        "is_carryover": false
       },
       "STU_003": {
         "status": "Present",
-        "entry_time": "2026-10-15T08:33:38.036898",
+        "entry_time": "2026-10-23T10:44:34.096206",
         "method": "Teacher Override (Approved)",
         "similarity_score": 1.0,
         "is_carryover": true
@@ -33,21 +33,21 @@
       },
       "STU_002": {
         "status": "Present",
-        "entry_time": "2026-10-15T08:33:38.036898",
+        "entry_time": "2026-10-23T10:44:34.096206",
         "method": "Carry-Over (In-Room)",
         "similarity_score": 1.0,
         "is_carryover": true
       },
       "STU_005": {
         "status": "Present",
-        "entry_time": "2026-10-15T08:33:38.036898",
+        "entry_time": "2026-10-23T10:44:34.096206",
         "method": "Carry-Over (In-Room)",
         "similarity_score": 1.0,
         "is_carryover": true
       },
       "TEST_USER_A": {
         "status": "Present",
-        "entry_time": "2026-10-15T08:33:38.036898",
+        "entry_time": "2026-10-23T10:44:34.096206",
         "method": "Carry-Over (In-Room)",
         "similarity_score": 1.0,
         "is_carryover": true
@@ -58,14 +58,14 @@
         "status": "Present",
         "entry_time": "2026-09-29T09:05:00",
         "method": "rfid_card",
-        "similarity_score": 0.9987172484397888,
+        "similarity_score": 0.9987755417823792,
         "is_carryover": false
       },
       "STU_003": {
         "status": "Review",
         "entry_time": "2026-09-29T09:07:00",
         "method": "rfid_card",
-        "similarity_score": 0.9987762570381165,
+        "similarity_score": 0.998694658279419,
         "is_carryover": false
       },
       "STU_0013": {
@@ -358,6 +358,160 @@
         "timestamp": "2026-09-29T09:07:00",
         "similarity_score": 0.9987762570381165,
         "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_003",
+        "room_id": "hall_a",
+        "timestamp": "2026-09-29T09:07:00",
+        "similarity_score": 0.9988380074501038,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_003",
+        "room_id": "hall_a",
+        "timestamp": "2026-09-29T09:07:00",
+        "similarity_score": 0.9988757371902466,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_003",
+        "room_id": "hall_a",
+        "timestamp": "2026-09-29T09:07:00",
+        "similarity_score": 0.9988534450531006,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:45",
+        "similarity_score": 0.5322173833847046,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.560145378112793,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.562024712562561,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.5469786524772644,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.5567367672920227,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.530825138092041,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.5467724800109863,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.5780918598175049,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.5566220283508301,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:50",
+        "similarity_score": 0.5475246906280518,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:55",
+        "similarity_score": 0.558484673500061,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:55",
+        "similarity_score": 0.5481218099594116,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:55",
+        "similarity_score": 0.5408627986907959,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:32:55",
+        "similarity_score": 0.5328775644302368,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:33:05",
+        "similarity_score": 0.9639320373535156,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:33:05",
+        "similarity_score": 0.9628338813781738,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-10-22T10:33:20",
+        "similarity_score": 0.8977554440498352,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_003",
+        "room_id": "hall_a",
+        "timestamp": "2026-09-29T09:07:00",
+        "similarity_score": 0.9987832903862,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_003",
+        "room_id": "hall_a",
+        "timestamp": "2026-09-29T09:07:00",
+        "similarity_score": 0.998694658279419,
+        "reason": "Borderline 1:1 face match or lighting variation"
       }
     ],
     "CS102_PERIOD_2": [
@@ -465,8 +619,22 @@
         "timestamp": "2026-09-29T09:05:00",
         "similarity_score": 0.5750166177749634,
         "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-09-29T09:05:00",
+        "similarity_score": 0.6240953207015991,
+        "reason": "Borderline 1:1 face match or lighting variation"
+      },
+      {
+        "student_id": "STU_001",
+        "room_id": "hall_a",
+        "timestamp": "2026-09-29T09:05:00",
+        "similarity_score": 0.6240953207015991,
+        "reason": "Borderline 1:1 face match or lighting variation"
       }
     ]
   },
-  "saved_at": "2026-10-15T08:33:38.150479"
+  "saved_at": "2026-10-23T10:44:34.997523"
 }

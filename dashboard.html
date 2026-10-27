@@ -1250,8 +1250,7 @@
       const headcountText = document.getElementById('face-headcount-status');
       const sharpText = document.getElementById('face-sharpness-status');
 
-      const headcount = data ? (data.genuine_headcount !== undefined ? data.genuine_headcount : (data.headcount !== undefined ? data.headcount : (data.face_detected ? 1 : 0))) : 0;
-      const spoofCount = data ? (data.spoof_count || 0) : 0;
+      const headcount = data ? (data.headcount !== undefined ? data.headcount : (data.genuine_headcount !== undefined ? data.genuine_headcount : (data.all_faces ? data.all_faces.length : (data.face_detected ? 1 : 0)))) : 0;
       const faces = (data && data.all_faces && data.all_faces.length > 0)
         ? data.all_faces
         : (data && data.face_detected && data.box ? [{ face_id: 1, box: data.box, confidence: data.confidence, landmarks: data.landmarks, is_spoof: false }] : []);
@@ -1259,35 +1258,23 @@
       // 1. Update Floating Headcount Tag
       if (headcountBadge) {
         if (headcount === 0) {
-          if (spoofCount > 0) {
-            headcountBadge.className = 'pill pill-danger';
-            headcountBadge.style.background = 'rgba(127, 29, 29, 0.95)';
-            headcountBadge.style.color = '#fecaca';
-            headcountBadge.style.borderColor = '#ef4444';
-            headcountBadge.innerText = `👥 Headcount: 0 (🚫 ${spoofCount} Phone Photo Filtered)`;
-          } else {
-            headcountBadge.className = 'pill pill-neutral';
-            headcountBadge.style.background = 'rgba(15, 23, 42, 0.85)';
-            headcountBadge.style.color = '#94a3b8';
-            headcountBadge.style.borderColor = 'rgba(148, 163, 184, 0.3)';
-            headcountBadge.innerText = '👥 Headcount: 0';
-          }
+          headcountBadge.className = 'pill pill-neutral';
+          headcountBadge.style.background = 'rgba(15, 23, 42, 0.85)';
+          headcountBadge.style.color = '#94a3b8';
+          headcountBadge.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+          headcountBadge.innerText = '👥 Headcount: 0';
         } else if (headcount === 1) {
           headcountBadge.className = 'pill pill-success';
           headcountBadge.style.background = 'rgba(6, 78, 59, 0.90)';
           headcountBadge.style.color = '#a7f3d0';
           headcountBadge.style.borderColor = '#10b981';
-          headcountBadge.innerText = spoofCount > 0
-            ? `👥 Headcount: 1 Person (🚫 ${spoofCount} Phone Photo Filtered)`
-            : '👥 Headcount: 1 Person';
+          headcountBadge.innerText = '👥 Headcount: 1 Person';
         } else if (headcount === 2) {
           headcountBadge.className = 'pill pill-danger';
           headcountBadge.style.background = 'rgba(127, 29, 29, 0.92)';
           headcountBadge.style.color = '#fecaca';
           headcountBadge.style.borderColor = '#ef4444';
-          headcountBadge.innerText = spoofCount > 0
-            ? `👥 Headcount: 2 (Tailgating Alert!) + ${spoofCount} Spoof`
-            : '👥 Headcount: 2 (Tailgating Alert!)';
+          headcountBadge.innerText = '👥 Headcount: 2 (Tailgating Alert!)';
         } else {
           headcountBadge.className = 'pill pill-warning';
           headcountBadge.style.background = 'rgba(120, 53, 15, 0.92)';
@@ -1299,24 +1286,17 @@
 
       // 2. Update Status Bar Headcount
       if (headcountText) {
-        if (spoofCount > 0) {
-          headcountText.innerText = `${headcount} live ${headcount === 1 ? 'person' : 'persons'} (${spoofCount} phone spoof filtered)`;
-          headcountText.style.color = headcount > 0 ? '#047857' : '#dc2626';
-        } else {
-          headcountText.innerText = `${headcount} ${headcount === 1 ? 'person' : 'persons'} in view`;
-          headcountText.style.color = headcount === 1 ? '#047857' : (headcount > 1 ? '#b45309' : '#64748b');
-        }
+        headcountText.innerText = `${headcount} ${headcount === 1 ? 'person' : 'persons'} in view`;
+        headcountText.style.color = headcount === 1 ? '#047857' : (headcount > 1 ? '#b45309' : '#64748b');
       }
 
       if (faces.length > 0) {
         const sx = w / (data.frame_width || 320);
         const sy = h / (data.frame_height || 240);
 
-        // Draw top banner: Tailgating or Spoof attack filtered
+        // Draw top banner: Tailgating alert if multiple individuals present
         if (headcount > 1) {
-          const bannerText = spoofCount > 0
-            ? `⚠️ TAILGATING: ${headcount} LIVE PEOPLE (🚫 ${spoofCount} PHONE SPOOF FILTERED)`
-            : `⚠️ TAILGATING ALERT: ${headcount} PEOPLE IN VIEW`;
+          const bannerText = `⚠️ TAILGATING ALERT: ${headcount} PEOPLE IN CAMERA VIEW`;
           ctx.font = 'bold 12px Inter, sans-serif';
           const bannerMetrics = ctx.measureText(bannerText);
           const bannerW = bannerMetrics.width + 24;
@@ -1326,23 +1306,11 @@
           ctx.fill();
           ctx.fillStyle = '#ffffff';
           ctx.fillText(bannerText, (w - bannerW) / 2 + 12, 24);
-        } else if (spoofCount > 0 && headcount === 0) {
-          const bannerText = `🛡️ PRESENTATION ATTACK FILTERED: ${spoofCount} PHONE / PHOTO DETECTED (0 HEADCOUNT)`;
-          ctx.font = 'bold 12px Inter, sans-serif';
-          const bannerMetrics = ctx.measureText(bannerText);
-          const bannerW = bannerMetrics.width + 24;
-          ctx.fillStyle = 'rgba(185, 28, 28, 0.94)';
-          ctx.beginPath();
-          ctx.roundRect((w - bannerW) / 2, 8, bannerW, 24, 6);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(bannerText, (w - bannerW) / 2 + 12, 24);
         }
 
         // Draw bounding boxes for EACH detected face
         faces.forEach((f, idx) => {
-          const isSpoof = Boolean(f.is_spoof);
-          const isPrimary = (idx === 0 && !isSpoof);
+          const isPrimary = (idx === 0);
           const fBox = f.box;
           if (!fBox) return;
 
@@ -1350,27 +1318,16 @@
           const by = fBox[1] * sy;
           const bw = fBox[2] * sx;
           const bh = fBox[3] * sy;
-          const confPct = Math.round((f.confidence || 0.8) * 100);
+          const confPct = Math.round((f.confidence || 0.85) * 100);
 
-          let mainColor, glowColor, pillBg, faceLabel;
-          if (isSpoof) {
-            mainColor = '#ef4444';
-            glowColor = '#f87171';
-            pillBg = 'rgba(153, 27, 27, 0.95)';
-            const rSnippet = (f.spoof_reasons && f.spoof_reasons.length > 0)
-              ? f.spoof_reasons[0].split('(')[0].trim()
-              : (f.spoof_type || 'Phone Screen');
-            faceLabel = `📱 SPOOF FILTERED: ${rSnippet} (0 Headcount)`;
-          } else {
-            mainColor = isPrimary ? '#10b981' : (idx === 1 ? '#6366f1' : '#06b6d4');
-            glowColor = isPrimary ? '#34d399' : (idx === 1 ? '#818cf8' : '#22d3ee');
-            pillBg = isPrimary ? 'rgba(6, 78, 59, 0.90)' : 'rgba(30, 27, 75, 0.90)';
-            faceLabel = isPrimary ? `🟢 Person #1 (${confPct}%)` : `👤 Person #${f.face_id || (idx + 1)} (${confPct}%)`;
-          }
+          const mainColor = isPrimary ? '#10b981' : (idx === 1 ? '#6366f1' : '#06b6d4');
+          const glowColor = isPrimary ? '#34d399' : (idx === 1 ? '#818cf8' : '#22d3ee');
+          const pillBg = isPrimary ? 'rgba(6, 78, 59, 0.92)' : 'rgba(30, 27, 75, 0.92)';
+          const faceLabel = isPrimary ? `🟢 Person #1 (${confPct}%)` : `👤 Person #${f.face_id || (idx + 1)} (${confPct}%)`;
 
           // Corner Reticles
           ctx.strokeStyle = mainColor;
-          ctx.lineWidth = (isPrimary || isSpoof) ? 3.5 : 2.5;
+          ctx.lineWidth = isPrimary ? 3.5 : 2.5;
           const cornerLen = Math.min(20, bw * 0.25, bh * 0.25);
 
           // Top-Left
@@ -1401,10 +1358,10 @@
           ctx.lineTo(bx + bw, by + bh - cornerLen);
           ctx.stroke();
 
-          // Bounding box: Dashed for spoof, softer for live
-          ctx.strokeStyle = isSpoof ? 'rgba(239, 68, 68, 0.85)' : (isPrimary ? 'rgba(16, 185, 129, 0.40)' : 'rgba(99, 102, 241, 0.40)');
-          ctx.lineWidth = isSpoof ? 2.0 : 1.2;
-          ctx.setLineDash(isSpoof ? [6, 4] : [4, 4]);
+          // Bounding box frame
+          ctx.strokeStyle = isPrimary ? 'rgba(16, 185, 129, 0.45)' : 'rgba(99, 102, 241, 0.45)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
           ctx.strokeRect(bx, by, bw, bh);
           ctx.setLineDash([]);
 
@@ -1438,28 +1395,20 @@
         });
 
         // Update badge and status text
-        const primFace = faces.find(f => !f.is_spoof) || faces[0];
-        const primConf = Math.round((primFace.confidence || 0.8) * 100);
+        const primFace = faces[0];
+        const primConf = Math.round((primFace.confidence || 0.85) * 100);
         if (badge) {
           if (headcount > 1) {
             badge.className = 'pill pill-warning';
             badge.innerText = `⚠️ Multi-Face: ${headcount}`;
-          } else if (headcount === 0 && spoofCount > 0) {
-            badge.className = 'pill pill-danger';
-            badge.innerText = `🛡️ Spoof Filtered: 0 Live`;
           } else {
             badge.className = 'pill pill-success';
             badge.innerText = `🟢 Face Locked: ${primConf}%`;
           }
         }
         if (statusText) {
-          if (headcount === 0 && spoofCount > 0) {
-            statusText.innerText = `Phone Photo Spoof Filtered (${spoofCount} attack blocked)`;
-            statusText.style.color = '#dc2626';
-          } else {
-            statusText.innerText = headcount > 1 ? `Multi-Face Locked (${headcount} people)` : `Face Locked (${primConf}% conf)`;
-            statusText.style.color = '#047857';
-          }
+          statusText.innerText = headcount > 1 ? `Multi-Face Locked (${headcount} people)` : `Face Locked (${primConf}% conf)`;
+          statusText.style.color = '#047857';
         }
         if (sharpText) {
           sharpText.innerText = `${data.quality_pass ? 'Sharp' : 'Blurry'} (${data.sharpness})`;
@@ -1736,26 +1685,21 @@
         let faceDetailsHtml = '';
         if (data.all_faces && data.all_faces.length > 0) {
           faceDetailsHtml = data.all_faces.map((f, i) => {
-            if (f.is_spoof) {
-              const r = (f.spoof_reasons && f.spoof_reasons.length > 0) ? f.spoof_reasons[0] : (f.spoof_type || 'Phone Screen');
-              return `• 🚫 [SPOOF ATTACK FILTERED] Face #${f.face_id || (i + 1)}: ${r} (Excluded from Headcount)`;
-            }
-            return `• 🟢 [LIVE HUMAN] Person #${f.face_id || (i + 1)}: Confidence ${(f.confidence * 100).toFixed(1)}%, Box [${f.box.join(', ')}]`;
+            return `• 🟢 Person #${f.face_id || (i + 1)}: Confidence ${(f.confidence * 100).toFixed(1)}%, Box [${f.box.join(', ')}]`;
           }).join('\n');
         } else {
           faceDetailsHtml = '• No faces identified in view.';
         }
 
-        const spoofInfo = data.spoof_count > 0 ? `\n• 🛡️ Blocked Presentation Attacks: ${data.spoof_count} phone/photo screen(s)` : '';
         const msg = `👥 CAMERA VIEW HEADCOUNT REPORT\n` +
           `----------------------------------------\n` +
-          `• Genuine Live Headcount: ${data.headcount} individual${data.headcount === 1 ? '' : 's'}${spoofInfo}\n` +
+          `• Total Headcount: ${data.headcount} individual${data.headcount === 1 ? '' : 's'}\n` +
           `• Crowd Density: ${data.density_category}\n` +
           `• Status: ${data.status_description || 'Active camera view'}\n` +
-          `• Tailgating / Multi-Person: ${data.tailgating_warning ? '⚠️ Active Multi-Person in doorway' : '✅ Normal single person occupancy'}\n` +
+          `• Multi-Person / Tailgating: ${data.tailgating_warning ? '⚠️ Multi-Person in doorway' : '✅ Single person occupancy'}\n` +
           `• Image Clarity: ${data.sharpness_score} Laplacian var\n` +
           `• Timestamp: ${data.timestamp}\n\n` +
-          `Detailed Detections:\n${faceDetailsHtml}`;
+          `Detected Individuals:\n${faceDetailsHtml}`;
 
         alert(msg);
       } catch (err) {
