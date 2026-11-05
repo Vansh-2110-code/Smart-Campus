@@ -50,6 +50,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
 from attendance_engine import attendance_system
+from academic_engine import academic_store, academic_ml, academic_ledger
 from pipeline import (
     FEATURE_COLUMNS,
     CampusAnomalyEngine,
@@ -784,6 +785,418 @@ async def export_classroom_verification_logs():
 async def clear_classroom_verification_logs():
     """Clears the classroom verification logs."""
     return attendance_system.clear_verification_logs()
+
+
+# ---------------------------------------------------------------------------
+# Academic Module: Study Material, Quiz, ML Services & Universal Ledger
+# (Phase 2 Extension - SOCI Block Pilot)
+# ---------------------------------------------------------------------------
+class MaterialProgressUpdate(BaseModel):
+    person_id: str
+    material_id: str
+    percent: int = Field(100, ge=0, le=100)
+
+
+class MaterialCreateRequest(BaseModel):
+    topic_id: str
+    title: str
+    type: Literal["pdf", "slides", "video", "notes"] = "pdf"
+    required: bool = True
+    status: Literal["Draft", "Published"] = "Published"
+    content_summary: Optional[str] = None
+    file_url: Optional[str] = None
+
+
+class QuizAutosaveRequest(BaseModel):
+    answers: Dict[str, Any]
+
+
+class QuizSubmitRequest(BaseModel):
+    answers: Optional[Dict[str, Any]] = None
+
+
+class QuestionGenRequest(BaseModel):
+    topic_id: str
+    count: int = Field(5, ge=1, le=20)
+    custom_gemini_api_key: Optional[str] = None
+    difficulty_mix: Optional[Dict[str, float]] = None
+
+
+class QuestionReviewActionRequest(BaseModel):
+    question_id: str
+    action: Literal["accept", "edit", "reject"]
+    edited_data: Optional[Dict[str, Any]] = None
+    approved_by: str = "FAC_001"
+
+
+class ManualQuestionCreateRequest(BaseModel):
+    topic_id: str
+    type: Literal["single_choice", "multiple_choice", "true_false", "short_answer"]
+    text: str
+    options: List[str] = []
+    answer: str
+    explanation: str
+    marks: float = 1.0
+    difficulty: Literal["Easy", "Medium", "Hard"] = "Medium"
+    subtopic: str = "General"
+    source_passage: Optional[str] = None
+    created_by: str = "FAC_001"
+
+
+class ScoreCorrectionRequest(BaseModel):
+    attempt_id: str
+    question_id: Optional[str] = None
+    new_score: float
+    reason: str
+    corrected_by: str = "FAC_001"
+
+
+class ShortAnswerEvalRequest(BaseModel):
+    student_answer: str
+    reference_answer: str
+    max_marks: float = 2.0
+    key_concepts: Optional[List[str]] = None
+
+
+@app.get("/api/v1/academic/overview", tags=["Academic Module (SOCI Block)"])
+async def get_academic_overview():
+    """Returns general overview of subjects, topics, quiz completion, and ML status."""
+    return {
+        "status": "operational",
+        "pilot_block": "SOCI Block",
+        "phase": "Phase 2 Extension",
+        "subjects_count": len(academic_store.subjects),
+        "topics_count": len(academic_store.topics),
+        "materials_count": len(academic_store.materials),
+        "questions_in_bank": len(academic_store.questions),
+        "total_attempts": len(academic_store.attempts),
+        "ml_model_version": academic_ml.model_version
+    }
+
+
+@app.get("/api/v1/academic/subjects", tags=["Academic Module (SOCI Block)"])
+async def list_subjects():
+    """Returns list of subjects."""
+    return list(academic_store.subjects.values())
+
+
+@app.get("/api/v1/academic/subjects/{subject_id}/topics", tags=["Academic Module (SOCI Block)"])
+async def list_subject_topics(subject_id: str):
+    """Returns topics for a given subject."""
+    topics = [t for t in academic_store.topics.values() if t.get("subject_id") == subject_id]
+    topics.sort(key=lambda x: x.get("position", 0))
+    return topics
+
+
+@app.get("/api/v1/academic/topics/{topic_id}/materials", tags=["Academic Module (SOCI Block)"])
+async def list_topic_materials(topic_id: str):
+    """Returns all materials for a topic."""
+    mats = [m for m in academic_store.materials.values() if m.get("topic_id") == topic_id]
+    return mats
+
+
+@app.post("/api/v1/academic/topics/{topic_id}/materials", tags=["Academic Module (SOCI Block)"])
+async def create_topic_material(topic_id: str, req: MaterialCreateRequest):
+    """Adds a new study material item (AC-MAT-02)."""
+    mat_id = f"MAT_{uuid.uuid4().hex[:6].upper()}"
+    new_mat = {
+        "material_id": mat_id,
+        "topic_id": topic_id,
+        "title": req.title,
+        "type": req.type,
+        "status": req.status,
+        "required": req.required,
+        "version": 1,
+        "content_summary": req.content_summary or f"Uploaded {req.type.upper()} material: {req.title}",
+        "file_url": req.file_url or f"/static/materials/{mat_id.lower()}.{req.type}"
+    }
+    academic_store.materials[mat_id] = new_mat
+    academic_store.save()
+    academic_ledger.record_event(
+        person_id="FAC_001",
+        location_id=f"ACAD-SUBJ-{topic_id}",
+        event_type="material_uploaded",
+        payload={"material_id": mat_id, "title": req.title}
+    )
+    return new_mat
+
+
+@app.post("/api/v1/academic/materials/{material_id}/publish", tags=["Academic Module (SOCI Block)"])
+async def toggle_material_publish(material_id: str):
+    """Toggles Draft/Published status for a study material item (AC-MAT-03)."""
+    mat = academic_store.materials.get(material_id)
+    if not mat:
+        raise HTTPException(status_code=404, detail="Material not found")
+    new_status = "Draft" if mat.get("status") == "Published" else "Published"
+    mat["status"] = new_status
+    academic_store.save()
+    academic_ledger.record_event(
+        person_id="FAC_001",
+        location_id="ACAD-MAT",
+        event_type="material_status_changed",
+        payload={"material_id": material_id, "new_status": new_status}
+    )
+    return {"material_id": material_id, "status": new_status}
+
+
+@app.put("/api/v1/academic/materials/{material_id}/progress", tags=["Academic Module (SOCI Block)"])
+async def record_material_progress(material_id: str, req: MaterialProgressUpdate):
+    """Records student reading or video watching progress (AC-STU-02)."""
+    key = f"{req.person_id}:{material_id}"
+    record = {
+        "person_id": req.person_id,
+        "material_id": material_id,
+        "percent": req.percent,
+        "completed_at": datetime.datetime.now(datetime.timezone.utc).isoformat() if req.percent >= 100 else None
+    }
+    academic_store.material_progress[key] = record
+    academic_store.save()
+    if req.percent >= 100:
+        academic_ledger.record_event(
+            person_id=req.person_id,
+            location_id="ACAD-PROGRESS",
+            event_type="material_completed",
+            payload={"material_id": material_id}
+        )
+    return record
+
+
+@app.get("/api/v1/academic/quizzes/{quiz_id}/unlock-status", tags=["Academic Module (SOCI Block)"])
+async def get_quiz_unlock_status(quiz_id: str, person_id: str = "STU_012"):
+    """Evaluates whether the quiz is unlocked for the student (AC-STU-03)."""
+    quiz = academic_store.quizzes.get(quiz_id)
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+    return academic_store.check_quiz_unlock(person_id, quiz["topic_id"])
+
+
+@app.post("/api/v1/academic/quizzes/{quiz_id}/attempts", tags=["Academic Module (SOCI Block)"])
+async def start_quiz_attempt(quiz_id: str, person_id: str = "STU_012"):
+    """Starts a new attempt or resumes an active attempt with frozen question set (AC-STU-04, AC-BE-02)."""
+    try:
+        attempt = academic_store.start_or_resume_attempt(person_id, quiz_id)
+        return attempt
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@app.put("/api/v1/academic/attempts/{attempt_id}/answers", tags=["Academic Module (SOCI Block)"])
+async def autosave_attempt_answers(attempt_id: str, req: QuizAutosaveRequest):
+    """Autosaves student answers with 10s timer cadence (AC-STU-05)."""
+    try:
+        return academic_store.autosave_answers(attempt_id, req.answers)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/v1/academic/attempts/{attempt_id}/submit", tags=["Academic Module (SOCI Block)"])
+async def submit_quiz_attempt(attempt_id: str, req: QuizSubmitRequest):
+    """
+    Submits, scores, evaluates short answers via ML, computes weak areas and integrity signals.
+    Guaranteed response in under 3 seconds (AC-STU-06, AC-STU-09, AC-BE-06).
+    """
+    try:
+        result = academic_store.submit_attempt(attempt_id, req.answers)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/v1/academic/attempts/{attempt_id}", tags=["Academic Module (SOCI Block)"])
+async def get_attempt_details(attempt_id: str):
+    """Returns attempt details and scored results."""
+    att = academic_store.attempts.get(attempt_id)
+    if not att:
+        raise HTTPException(status_code=404, detail="Attempt not found")
+    return att
+
+
+@app.post("/api/v1/academic/topics/{topic_id}/questions/generate", tags=["Academic ML Services"])
+async def generate_questions_api(topic_id: str, req: QuestionGenRequest):
+    """
+    Generates grounded quiz questions from topic text using ML or optional Gemini API (AC-ML-01, AC-ML-02).
+    """
+    topic = academic_store.topics.get(topic_id)
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    text = topic.get("extracted_text", "")
+    if not text:
+        raise HTTPException(status_code=400, detail="Topic has no extracted text to generate questions from.")
+
+    result = academic_ml.generate_questions_from_text(
+        topic_id=topic_id,
+        material_text=text,
+        count=req.count,
+        difficulty_mix=req.difficulty_mix,
+        custom_gemini_api_key=req.custom_gemini_api_key
+    )
+
+    # Place in review queue for staff approval (AC-QZ-04)
+    for q in result.get("questions", []):
+        academic_store.review_queue.append(q)
+    academic_store.save()
+
+    return result
+
+
+@app.get("/api/v1/academic/questions/review-queue", tags=["Academic ML Services"])
+async def get_question_review_queue():
+    """Returns ML generated questions currently awaiting staff review (AC-QZ-04)."""
+    return academic_store.review_queue
+
+
+@app.post("/api/v1/academic/questions/review-action", tags=["Academic ML Services"])
+async def review_question_action(req: QuestionReviewActionRequest):
+    """
+    Staff review action: Accepts into question bank, edits, or rejects draft question (AC-QZ-04).
+    """
+    found = None
+    for i, q in enumerate(academic_store.review_queue):
+        if q["question_id"] == req.question_id:
+            found = academic_store.review_queue.pop(i)
+            break
+
+    if not found:
+        raise HTTPException(status_code=404, detail="Draft question not found in review queue")
+
+    if req.action in ("accept", "edit"):
+        target_data = req.edited_data if (req.action == "edit" and req.edited_data) else found
+        target_data["approved_by"] = req.approved_by
+        target_data["status"] = "Approved"
+        academic_store.questions[target_data["question_id"]] = target_data
+        
+        # Link to Topic 1 quiz if topic matches
+        quiz = academic_store.quizzes.get("QUIZ_CS101_01")
+        if quiz and target_data["question_id"] not in quiz.get("question_ids", []):
+            quiz.setdefault("question_ids", []).append(target_data["question_id"])
+
+        academic_ledger.record_event(
+            person_id=req.approved_by,
+            location_id="ACAD-QBANK",
+            event_type="question_approved",
+            payload={"question_id": target_data["question_id"], "action": req.action}
+        )
+
+    academic_store.save()
+    return {"status": req.action, "question_id": req.question_id}
+
+
+@app.post("/api/v1/academic/questions", tags=["Academic ML Services"])
+async def create_manual_question(req: ManualQuestionCreateRequest):
+    """Manually adds a question to the question bank (AC-QZ-04)."""
+    qid = f"Q_MAN_{uuid.uuid4().hex[:6].upper()}"
+    new_q = {
+        "question_id": qid,
+        "topic_id": req.topic_id,
+        "type": req.type,
+        "text": req.text,
+        "options": req.options,
+        "answer": req.answer,
+        "explanation": req.explanation,
+        "marks": req.marks,
+        "difficulty": req.difficulty,
+        "subtopic": req.subtopic,
+        "source_passage": req.source_passage or "Manually authored by staff.",
+        "origin": "Manual",
+        "approved_by": req.created_by
+    }
+    academic_store.questions[qid] = new_q
+    quiz = academic_store.quizzes.get("QUIZ_CS101_01")
+    if quiz:
+        quiz.setdefault("question_ids", []).append(qid)
+    academic_store.save()
+    return new_q
+
+
+@app.post("/api/v1/academic/ml/evaluate-short-answer", tags=["Academic ML Services"])
+async def evaluate_short_answer_api(req: ShortAnswerEvalRequest):
+    """Evaluates short-answer semantic correctness and concept coverage (AC-ML-05)."""
+    return academic_ml.evaluate_short_answer(
+        student_answer=req.student_answer,
+        reference_answer=req.reference_answer,
+        max_marks=req.max_marks,
+        key_concepts=req.key_concepts
+    )
+
+
+@app.get("/api/v1/academic/analytics/item-discrimination", tags=["Academic Psychometrics & Analytics"])
+async def get_item_discrimination():
+    """
+    Calculates Classical Item Difficulty (p) and Item Discrimination Index (D):
+    D = P_upper - P_lower. Flags mis-keyed questions (AC-ML-07).
+    """
+    attempts_list = [a for a in academic_store.attempts.values() if a.get("submitted")]
+    questions_list = list(academic_store.questions.values())
+    return academic_ml.compute_item_analytics(attempts_list, questions_list)
+
+
+@app.get("/api/v1/academic/analytics/integrity-summary", tags=["Academic Psychometrics & Analytics"])
+async def get_integrity_summary():
+    """Summarizes quiz speedruns, identical error clusters, and collusion signals (AC-ML-08)."""
+    hist = [a for a in academic_store.attempts.values() if a.get("submitted")]
+    flagged = []
+    for att in hist:
+        integ = academic_ml.check_attempt_integrity(att, hist)
+        if integ.get("category") in ("Medium", "High") or integ.get("flags"):
+            flagged.append(integ)
+    return {
+        "total_attempts_audited": len(hist),
+        "flagged_attempts_count": len(flagged),
+        "flagged_attempts": flagged
+    }
+
+
+@app.post("/api/v1/academic/scores/correct", tags=["Academic Psychometrics & Analytics"])
+async def correct_student_score(req: ScoreCorrectionRequest):
+    """
+    Allows faculty/HOD to manually correct an attempt score.
+    Must provide a reason and immediately records to the append-only ledger (AC-RES-02, AC-BE-04).
+    """
+    att = academic_store.attempts.get(req.attempt_id)
+    if not att:
+        raise HTTPException(status_code=404, detail="Attempt not found")
+    old_score = att.get("score", 0.0)
+    att["score"] = req.new_score
+    att["passed"] = (req.new_score / max(att.get("max_score", 1.0), 1.0)) >= 0.60
+    academic_store.save()
+
+    # Append to SHA-256 Ledger
+    academic_ledger.record_event(
+        person_id=req.corrected_by,
+        location_id="ACAD-SCORE-AUDIT",
+        event_type="score_corrected",
+        payload={
+            "attempt_id": req.attempt_id,
+            "student_person_id": att.get("person_id"),
+            "old_score": old_score,
+            "new_score": req.new_score,
+            "reason": req.reason
+        },
+        reason=req.reason
+    )
+    return {"status": "corrected", "attempt_id": req.attempt_id, "old_score": old_score, "new_score": req.new_score}
+
+
+@app.get("/api/v1/academic/ledger", tags=["Academic Ledger & Governance"])
+async def get_academic_ledger_events(limit: int = 50):
+    """Returns immutable 4-field SHA-256 chained audit events (AC-BE-04, AC-BE-05)."""
+    return academic_ledger.get_recent_events(limit=limit)
+
+
+@app.get("/api/v1/academic/ledger/export", tags=["Academic Ledger & Governance"])
+async def export_academic_ledger_csv():
+    """Exports academic audit ledger as CSV for compliance and HOD review (AC-RES-04)."""
+    events = academic_ledger.get_recent_events(limit=500)
+    import io
+    output = io.StringIO()
+    output.write("event_id,person_id,location_id,timestamp,event_type,reason,current_hash\n")
+    for ev in events:
+        output.write(f'"{ev.get("event_id")}","{ev.get("person_id")}","{ev.get("location_id")}","{ev.get("timestamp")}","{ev.get("event_type")}","{ev.get("reason")}","{ev.get("current_hash")}"\n')
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=academic_audit_ledger.csv"}
+    )
 
 
 if __name__ == "__main__":

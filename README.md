@@ -381,6 +381,49 @@ Content-Type: application/json
 
 ---
 
+### Academic Module & ML Quiz Engine Endpoints (SOCI Block Pilot)
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/academic/overview` | Pilot status, subject/topic counts, bank size, and NLP engine version. |
+| `GET` | `/api/v1/academic/subjects` | Lists active courses (e.g. CS101 Distributed Systems). |
+| `GET` | `/api/v1/academic/subjects/{id}/topics` | Ordered topic progression (Topic 1: Consensus & Raft). |
+| `GET` | `/api/v1/academic/topics/{id}/materials` | Study materials with Required/Optional and Draft/Published tags. |
+| `PUT` | `/api/v1/academic/materials/{id}/progress` | Records student reading/viewing progress (0-100%). |
+| `GET` | `/api/v1/academic/quizzes/{id}/unlock-status` | Dynamic unlock engine: unlocks only when all required materials are completed. |
+| `POST` | `/api/v1/academic/quizzes/{id}/attempts` | Starts/resumes quiz attempt with frozen question set and server timer. |
+| `PUT` | `/api/v1/academic/attempts/{id}/answers` | Periodic 10-second autosave endpoint for student answers. |
+| `POST` | `/api/v1/academic/attempts/{id}/submit` | Idempotent scoring, semantic evaluation, weak-area diagnosis (<3s). |
+| `POST` | `/api/v1/academic/topics/{id}/questions/generate` | Grounded AI question generation with passage citation (AC-ML-01/02). |
+| `GET` | `/api/v1/academic/questions/review-queue` | Faculty review queue for AI-generated drafts. |
+| `POST` | `/api/v1/academic/questions/review-action` | Faculty approve, edit, or reject action on draft questions. |
+| `POST` | `/api/v1/academic/ml/evaluate-short-answer` | Standalone semantic grading of open-ended short answers (AC-ML-05). |
+| `GET` | `/api/v1/academic/analytics/item-discrimination` | Classical Test Theory Item Difficulty ($p$) and Discrimination ($D$). |
+| `GET` | `/api/v1/academic/analytics/integrity-summary` | Advisory telemetry: speedrun detection and identical error clusters. |
+| `POST` | `/api/v1/academic/scores/correct` | Manual faculty score correction with mandatory SHA-256 audit log. |
+| `GET` | `/api/v1/academic/ledger` | Universal four-field event stream with SHA-256 hash chaining. |
+| `GET` | `/api/v1/academic/ledger/export` | Downloadable CSV export of the academic audit trail. |
+
+---
+
+## 🎓 Academic Module (Phase 2 Extension: SOCI Block Pilot)
+
+Implements the complete requirements specified in `Campus Automation – Academic Module Requirements Document`:
+1. **Curriculum & Study Materials (`AC-MAT`)**: Ordered topics, Required vs Optional materials, virus & type gating, in-page slide/doc reader.
+2. **Server-Enforced Unlock Rules (`AC-STU-03`, `AC-BE-02`)**: End-of-topic quiz unlocks only when 100% of required topic materials are completed.
+3. **Timed Sitting & Resilient Autosave (`AC-STU-04/05`)**: Synchronized 10-minute timer, question palette, and 10s autosave cadence.
+4. **Grounded AI Question Synthesis (`AC-ML-01/02`)**: Generates MCQ, True/False, and short-answer questions strictly grounded in source passages.
+5. **Quality Filters (`AC-ML-03`)**: Automatic deduplication, unique answer check, and prompt answer-leakage suppression.
+6. **Difficulty Tagging & Recalibration (`AC-ML-04`)**: Classical Item Facility ($p$-value) recalibration once $\ge 30$ attempts are logged.
+7. **Short-Answer Semantic Evaluation (`AC-ML-05`)**: Hybrid TF-IDF cosine similarity + concept coverage scoring with faculty override.
+8. **Weak-Area Remediation Cards (`AC-ML-06`)**: Direct mapping of incorrect answers to recommended study material sections.
+9. **Psychometric Item Discrimination (`AC-ML-07`)**: Item discrimination index ($D = P_{\text{upper}} - P_{\text{lower}}$) flagging flawed or mis-keyed questions ($D < 0.0$).
+10. **Quiz Integrity Telemetry (`AC-ML-08`)**: Advisory speedrun and collusion detection without automatic student penalization.
+11. **DPDP Privacy & Model Governance (`AC-ML-09/10`)**: 100% on-premises processing without leaking student PII to external cloud APIs.
+12. **Four-Field Universal Ledger (`AC-BE-04/05`)**: Event streaming with SHA-256 cryptographic hash chaining.
+
+---
+
 ## 🔄 Edge Store-and-Forward Replay Handling
 
 When edge turnstile controllers lose campus network connectivity:

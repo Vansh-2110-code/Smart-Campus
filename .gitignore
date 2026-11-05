@@ -55,8 +55,11 @@ data/ov_cache/
 # Logs & temporary files
 logs/*.jsonl
 !logs/.gitkeep
+data/academic/*.jsonl
 *.log
 kernel.errors.txt
+extracted_academic_requirements.txt
+.opencode/
 scratch/
 scratch_*.png
 

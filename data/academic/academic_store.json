@@ -1,0 +1,327 @@
+{
+  "subjects": {
+    "SUBJ_CS101": {
+      "subject_id": "SUBJ_CS101",
+      "code": "CS101",
+      "name": "Distributed Systems & Cloud Infrastructure",
+      "department": "Computer Science & Engineering",
+      "owners": [
+        "FAC_001",
+        "FAC_002"
+      ],
+      "status": "Active"
+    }
+  },
+  "topics": {
+    "TOPIC_CS101_01": {
+      "topic_id": "TOPIC_CS101_01",
+      "subject_id": "SUBJ_CS101",
+      "title": "Topic 1: Consensus Protocols & Raft Architecture",
+      "description": "Leader Election, Log Replication, Safety Invariants, and Fault Tolerance.",
+      "position": 1,
+      "quiz_enabled": true,
+      "quiz_id": "QUIZ_CS101_01",
+      "extracted_text": "\nTopic 1: Consensus Protocols and the Raft Algorithm in Distributed Systems.\nIn distributed computing, achieving consensus among independent nodes is critical for reliability, fault tolerance, and data consistency. A consensus algorithm ensures that a cluster of nodes agrees on a series of state machine inputs or values, even in the presence of network partitions and node crashes.\n\nThe Raft consensus algorithm was developed by Diego Ongaro and John Ousterhout at Stanford University as a more understandable and maintainable alternative to Paxos. Raft decomposes consensus into three key sub-problems: Leader Election, Log Replication, and Safety.\n\n1. Leader Election:\nAt any moment, a node in Raft operates in one of three states: Follower, Candidate, or Leader. When a cluster starts or when a follower misses periodic heartbeats from the leader due to an election timeout (typically randomized between 150ms and 300ms), it transitions to Candidate state. The candidate increments its current term, votes for itself, and broadcasts RequestVote RPCs to all peers. If it receives votes from a majority of nodes (quorum), it becomes the cluster Leader. Randomized election timeouts prevent split-vote scenarios where multiple candidates split the votes equally.\n\n2. Log Replication:\nOnce elected, the leader handles all client requests. Clients send write commands directly to the leader. The leader appends the command as a new entry to its local write-ahead log and issues AppendEntries RPCs to replicate the entry across follower nodes. When an entry has been safely replicated on a majority of cluster nodes, the entry is considered committed. The leader applies the committed entry to its local state machine and returns the result to the client. The leader communicates commit status to followers in subsequent AppendEntries messages, after which followers apply it to their respective state machines.\n\n3. Safety and Invariants:\nRaft guarantees strong safety invariants:\n- Election Safety: At most one leader can be elected in a given term.\n- Leader Append-Only: A leader never overwrites or truncates its log entries; it only appends new ones.\n- Log Matching Property: If two logs contain an entry with the same index and term, then the logs are identical in all entries up through the given index.\n- Leader Completeness: If a log entry is committed in a given term, that entry will be present in the logs of the leaders for all higher-numbered terms. A candidate cannot be elected unless its log contains all committed entries from prior terms, enforced by voting rules comparing last log index and term.\n\n4. Fault Tolerance and Split-Brain Prevention:\nIn a cluster of 2F + 1 nodes, Raft can tolerate up to F node failures while continuing to progress and commit transactions. By enforcing that any leader must win a strict majority of votes (> 50%), Raft prevents split-brain syndrome, ensuring two disjoint sub-clusters cannot simultaneously act as leaders during a network partition.\n"
+    },
+    "TOPIC_CS101_02": {
+      "topic_id": "TOPIC_CS101_02",
+      "subject_id": "SUBJ_CS101",
+      "title": "Topic 2: Sharding & Distributed Storage Engines",
+      "description": "Consistent Hashing, Dynamo architecture, and replication strategies.",
+      "position": 2,
+      "quiz_enabled": false,
+      "quiz_id": null,
+      "extracted_text": "Topic 2 content scheduled for next release."
+    }
+  },
+  "materials": {
+    "MAT_001": {
+      "material_id": "MAT_001",
+      "topic_id": "TOPIC_CS101_01",
+      "title": "Lecture Slides: Raft Consensus & Election Protocol",
+      "type": "slides",
+      "status": "Published",
+      "required": true,
+      "version": 1,
+      "content_summary": "Detailed slides covering Raft 3-state machine, election timeouts, and AppendEntries RPC.",
+      "file_url": "/static/materials/cs101_topic1_slides.pdf"
+    },
+    "MAT_002": {
+      "material_id": "MAT_002",
+      "topic_id": "TOPIC_CS101_01",
+      "title": "Core Technical Document: Diego Ongaro's Raft Paper",
+      "type": "pdf",
+      "status": "Published",
+      "required": true,
+      "version": 1,
+      "content_summary": "Full authoritative paper on In Search of an Understandable Consensus Algorithm.",
+      "file_url": "/static/materials/raft_paper.pdf"
+    },
+    "MAT_003": {
+      "material_id": "MAT_003",
+      "topic_id": "TOPIC_CS101_01",
+      "title": "Supplementary Video: Raft Distributed Visual Simulation",
+      "type": "video",
+      "status": "Published",
+      "required": false,
+      "version": 1,
+      "content_summary": "Animated visualization of node heartbeats, candidate election, and quorum agreement.",
+      "file_url": "https://raft.github.io"
+    }
+  },
+  "questions": {
+    "Q_101": {
+      "question_id": "Q_101",
+      "topic_id": "TOPIC_CS101_01",
+      "type": "single_choice",
+      "text": "What are the three node states in the Raft consensus algorithm?",
+      "options": [
+        "Follower, Candidate, Leader",
+        "Proposer, Acceptor, Learner",
+        "Primary, Secondary, Arbiter",
+        "Master, Worker, Sentinel"
+      ],
+      "answer": "Follower, Candidate, Leader",
+      "explanation": "Raft explicitly defines three operational states: Follower, Candidate, and Leader.",
+      "marks": 1.0,
+      "difficulty": "Easy",
+      "subtopic": "Core Architecture",
+      "source_passage": "At any moment, a node in Raft operates in one of three states: Follower, Candidate, or Leader.",
+      "origin": "Manual",
+      "approved_by": "FAC_001"
+    },
+    "Q_102": {
+      "question_id": "Q_102",
+      "topic_id": "TOPIC_CS101_01",
+      "type": "single_choice",
+      "text": "In a cluster of 5 nodes running Raft, what is the minimum quorum required to elect a leader or commit an entry?",
+      "options": [
+        "3 nodes (majority)",
+        "2 nodes",
+        "4 nodes",
+        "All 5 nodes"
+      ],
+      "answer": "3 nodes (majority)",
+      "explanation": "In 2F + 1 nodes (5 nodes, F=2), a strict majority quorum requires F + 1 = 3 nodes.",
+      "marks": 1.0,
+      "difficulty": "Medium",
+      "subtopic": "Fault Tolerance & Quorum",
+      "source_passage": "By enforcing that any leader must win a strict majority of votes (> 50%), Raft prevents split-brain.",
+      "origin": "Manual",
+      "approved_by": "FAC_001"
+    },
+    "Q_103": {
+      "question_id": "Q_103",
+      "topic_id": "TOPIC_CS101_01",
+      "type": "true_false",
+      "text": "True or False: A Raft leader is permitted to overwrite or delete its own committed log entries during network partitions.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "answer": "False",
+      "explanation": "Leader Append-Only property guarantees a leader never overwrites or truncates its own log entries.",
+      "marks": 1.0,
+      "difficulty": "Medium",
+      "subtopic": "Log Replication Safety",
+      "source_passage": "Leader Append-Only: A leader never overwrites or truncates its log entries; it only appends new ones.",
+      "origin": "Manual",
+      "approved_by": "FAC_001"
+    },
+    "Q_104": {
+      "question_id": "Q_104",
+      "topic_id": "TOPIC_CS101_01",
+      "type": "short_answer",
+      "text": "Why does Raft use randomized election timeouts rather than fixed timeouts?",
+      "options": [],
+      "answer": "Randomized timeouts prevent split-vote scenarios where multiple candidates start elections simultaneously and divide votes equally.",
+      "explanation": "Randomizing the timeout (e.g. 150-300ms) ensures that usually one follower times out first, collects the majority quorum, and becomes leader before others.",
+      "marks": 2.0,
+      "difficulty": "Hard",
+      "subtopic": "Leader Election",
+      "source_passage": "Randomized election timeouts prevent split-vote scenarios where multiple candidates split the votes equally.",
+      "origin": "Manual",
+      "approved_by": "FAC_001"
+    }
+  },
+  "quizzes": {
+    "QUIZ_CS101_01": {
+      "quiz_id": "QUIZ_CS101_01",
+      "topic_id": "TOPIC_CS101_01",
+      "title": "Topic 1 Mastery Quiz: Raft Distributed Consensus",
+      "version": 1,
+      "time_limit_sec": 600,
+      "pass_mark_pct": 60.0,
+      "max_attempts": 3,
+      "shuffle_questions": true,
+      "shuffle_options": true,
+      "status": "Published",
+      "open_at": "2026-11-01T00:00:00Z",
+      "close_at": "2026-11-30T23:59:59Z",
+      "question_ids": [
+        "Q_101",
+        "Q_102",
+        "Q_103",
+        "Q_104"
+      ]
+    }
+  },
+  "attempts": {
+    "ATT_001": {
+      "attempt_id": "ATT_001",
+      "quiz_id": "QUIZ_CS101_01",
+      "person_id": "STU_045",
+      "score": 4.0,
+      "max_score": 5.0,
+      "passed": true,
+      "duration_sec": 240,
+      "answers": [
+        {
+          "question_id": "Q_101",
+          "answer": "Follower, Candidate, Leader",
+          "is_correct": true
+        },
+        {
+          "question_id": "Q_102",
+          "answer": "3 nodes (majority)",
+          "is_correct": true
+        },
+        {
+          "question_id": "Q_103",
+          "answer": "False",
+          "is_correct": true
+        },
+        {
+          "question_id": "Q_104",
+          "answer": "It avoids split votes by staggering election starts.",
+          "is_correct": true
+        }
+      ]
+    },
+    "ATT_002": {
+      "attempt_id": "ATT_002",
+      "quiz_id": "QUIZ_CS101_01",
+      "person_id": "STU_088",
+      "score": 3.0,
+      "max_score": 5.0,
+      "passed": true,
+      "duration_sec": 310,
+      "answers": [
+        {
+          "question_id": "Q_101",
+          "answer": "Follower, Candidate, Leader",
+          "is_correct": true
+        },
+        {
+          "question_id": "Q_102",
+          "answer": "4 nodes",
+          "is_correct": false
+        },
+        {
+          "question_id": "Q_103",
+          "answer": "False",
+          "is_correct": true
+        },
+        {
+          "question_id": "Q_104",
+          "answer": "Prevents split vote deadlock.",
+          "is_correct": true
+        }
+      ]
+    },
+    "ATT_003": {
+      "attempt_id": "ATT_003",
+      "quiz_id": "QUIZ_CS101_01",
+      "person_id": "STU_102",
+      "score": 1.0,
+      "max_score": 5.0,
+      "passed": false,
+      "duration_sec": 190,
+      "answers": [
+        {
+          "question_id": "Q_101",
+          "answer": "Master, Worker, Sentinel",
+          "is_correct": false
+        },
+        {
+          "question_id": "Q_102",
+          "answer": "2 nodes",
+          "is_correct": false
+        },
+        {
+          "question_id": "Q_103",
+          "answer": "True",
+          "is_correct": false
+        },
+        {
+          "question_id": "Q_104",
+          "answer": "Random timeout makes it faster.",
+          "is_correct": false
+        }
+      ]
+    },
+    "ATT_004": {
+      "attempt_id": "ATT_004",
+      "quiz_id": "QUIZ_CS101_01",
+      "person_id": "STU_115",
+      "score": 2.0,
+      "max_score": 5.0,
+      "passed": false,
+      "duration_sec": 45,
+      "answers": [
+        {
+          "question_id": "Q_101",
+          "answer": "Follower, Candidate, Leader",
+          "is_correct": true
+        },
+        {
+          "question_id": "Q_102",
+          "answer": "2 nodes",
+          "is_correct": false
+        },
+        {
+          "question_id": "Q_103",
+          "answer": "True",
+          "is_correct": false
+        },
+        {
+          "question_id": "Q_104",
+          "answer": "random",
+          "is_correct": false
+        }
+      ]
+    }
+  },
+  "material_progress": {
+    "STU_012:MAT_001": {
+      "person_id": "STU_012",
+      "material_id": "MAT_001",
+      "percent": 100,
+      "completed_at": "2026-11-03T10:00:00Z"
+    },
+    "STU_012:MAT_002": {
+      "person_id": "STU_012",
+      "material_id": "MAT_002",
+      "percent": 100,
+      "completed_at": "2026-11-03T11:30:00Z"
+    }
+  },
+  "review_queue": [],
+  "enrolments": {
+    "STU_012": [
+      "SUBJ_CS101"
+    ],
+    "STU_045": [
+      "SUBJ_CS101"
+    ],
+    "STU_088": [
+      "SUBJ_CS101"
+    ],
+    "STU_102": [
+      "SUBJ_CS101"
+    ],
+    "STU_115": [
+      "SUBJ_CS101"
+    ]
+  }
+}
