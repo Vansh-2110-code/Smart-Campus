@@ -202,43 +202,62 @@ smart-campus/
 │   ├── roc_curves.png
 │   ├── system_architecture_flow.png
 │   └── tiered_traffic_distribution.png
-├── data/                                 # Datastores, presence tracking, and embeddings
-│   ├── classroom_verification_logs.json  # Audit trail for classroom verifications
-│   ├── embeddings/                       # Enrolled student face embeddings (512-d)
-│   └── presence_state.json               # Live classroom Finite State Machine store
-├── doc/                                  # Executive presentations, briefs, and reports
-│   ├── Campus_Attendance_System_v1.4.docx
-│   ├── Campus_Automation_Advanced_Models_Report.pdf
-│   ├── Campus_Irregularity_Flagging_Engine_Report.pdf
-│   └── ML_Work_Brief__Irregularity_Flagging.pdf
-├── logs/                                 # Runtime audit logs (shadow mode telemetry)
-│   └── .gitkeep
-├── models/                               # Pretrained neural nets and ML models
-│   ├── benchmark_results.json
+```text
+Smart-Campus/
+├── docs/                                 # Centralized Documentation, Guides & Executive Reports
+│   ├── pdf/                              # Publication-quality executive PDF documents
+│   │   ├── Smart_Campus_Complete_Features_Guide.pdf
+│   │   ├── Smart_Campus_ML_Models_and_Techniques_Specification.pdf
+│   │   ├── Smart_Campus_Hardware_Requirements_Report.pdf
+│   │   ├── PROJECT_GUIDE_ADVANCED.pdf
+│   │   ├── PROJECT_GUIDE_BEGINNER.pdf
+│   │   └── ...
+│   ├── specifications/                   # Detailed technical markdown specifications
+│   │   ├── SMART_CAMPUS_COMPLETE_FEATURES_GUIDE.md
+│   │   ├── SMART_CAMPUS_ML_MODELS_AND_TECHNIQUES_SPECIFICATION.md
+│   │   ├── SMART_CAMPUS_PRD_TRD_SYSTEM_FLOW.md
+│   │   ├── HARDWARE_REQUIREMENTS_AND_SELECTION_GUIDE.md
+│   │   ├── PROJECT_GUIDE_ADVANCED.md
+│   │   ├── PROJECT_GUIDE_BEGINNER.md
+│   │   └── REPORT.md
+│   └── presentations/                    # Executive slide decks & ML briefs (.pptx, .docx)
+│       ├── Campus_Automation_Phase1_Executive_Deck.pptx
+│       └── ML_Team_Brief_Smart_Campus_Attendance.docx
+├── scripts/                              # Generation utilities & automated builders
+│   ├── generate_features_pdf.py          # Features & ML PDF specification builder
+│   ├── generate_hardware_pdf.py          # Hardware selection report builder
+│   ├── generate_charts.py                # Visualizations generator (matplotlib/seaborn)
+│   ├── build_guides_pdf.py               # Guide PDF compiler (reportlab NumberedCanvas)
+│   └── build_unified_dashboard.py        # Dashboard HTML compiler
+├── tests/                                # Automated verification test suites
+│   ├── test_service.py                   # 28-test Pytest verification suite
+│   └── manual_test.py                    # Interactive testing and simulation CLI
+├── models/                               # Pretrained neural networks & ML models
 │   ├── face_detection_yunet_2023mar.onnx # OpenCV YuNet Face Localization
 │   ├── face_recognition_sface_2021dec.onnx # SFace 512-d Biometric Extractor
-│   ├── feature_stats.json                # Statistical normalization references
 │   ├── isolation_forest.joblib           # Trained anomaly detection model
-│   └── next_gen_model.joblib             # Calibrated ensemble pipeline
-├── attendance_engine.py                  # Core WP 1-7 Biometric & Presence State Machine
-├── campus_scans.csv                      # Baseline benchmark dataset
-├── campus_scans.jsonl                    # Raw streaming event benchmark dataset
-├── dashboard.html                        # Real-time SPA monitoring dashboard
-├── generate_charts.py                    # Matplotlib/Seaborn visualization generator
-├── generate_pdf_report.py                # Automated technical PDF report generator
-├── hardware_edge_agent.py                # Edge turnstile daemon with offline SQLite buffering
-├── manual_test.py                        # Interactive testing and simulation harness
+│   └── xgboost_model.joblib              # Supervised benchmark model
+├── data/                                 # Datastores, presence tracking, and embeddings
+│   ├── academic/                         # SOCI Block pilot store (courses, topics, materials)
+│   ├── classroom_verification_logs.json  # Audit trail for classroom verifications
+│   ├── embeddings/                       # Enrolled student face embeddings (512-d)
+│   ├── presence_state.json               # Live classroom Finite State Machine store
+│   ├── campus_scans.csv                  # Baseline benchmark dataset
+│   └── campus_scans.jsonl                # Raw streaming event benchmark dataset
+├── charts/                               # Generated evaluation plots & architecture diagrams
+├── logs/                                 # Runtime audit logs (shadow mode telemetry)
+│   └── .gitkeep
+├── service.py                            # Production FastAPI Microservice API Entrypoint
+├── attendance_engine.py                  # Core Biometric 1:1 Verification & Presence FSM
+├── academic_engine.py                    # Academic Module, Grounded NLP & Psychometrics
+├── pipeline.py                           # Streaming Feature Store & Isolation Forest
 ├── openvino_engine.py                    # Intel OpenVINO deep learning acceleration engine
-├── pipeline.py                           # Streaming Feature Store and ML training pipeline
-├── requirements.txt                      # Project dependencies
-├── service.py                            # Production FastAPI microservice
+├── hardware_edge_agent.py                # Edge turnstile daemon with offline SQLite buffering
 ├── synthetic_generator.py                # Synthetic campus routines and anomaly injector
-├── test_service.py                       # 28-test Pytest verification suite
-├── BEGINNER_GUIDE.md                     # Guided walkthrough for new developers
-├── HARDWARE_REQUIREMENTS_AND_SELECTION_GUIDE.md # Complete hardware BOM, best & alt models, pricing, and deep technical justification
-├── PROJECT_GUIDE_ADVANCED.md             # Deep-dive architectural specification
-├── REPORT.md                             # Comprehensive technical evaluation report
-└── SMART_CAMPUS_PRD_TRD_SYSTEM_FLOW.md  # Formal PRD & TRD specification
+├── dashboard.html                        # Real-time SPA monitoring dashboard (9 Unified Tabs)
+├── requirements.txt                      # Project dependencies
+├── LICENSE                               # MIT License
+└── .gitignore                            # Git ignore configuration
 ```
 
 ---

@@ -24,9 +24,15 @@ import datetime
 import json
 import os
 import sqlite3
+import sys
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+
+# Ensure root directory is in sys.path
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
 
 from hardware_edge_agent import HardwareEdgeAgent, OfflineBufferStore, TurnstileRelayController
 from service import AUDIT_LOG_PATH, app, feature_store

@@ -38,6 +38,11 @@ if hasattr(sys.stderr, "reconfigure"):
     except Exception:
         pass
 
+# Ensure root directory is in sys.path
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+
 from pipeline import CampusAnomalyEngine, CampusFeatureStore, FEATURE_COLUMNS
 from synthetic_generator import CAMPUS_LOCATIONS
 from attendance_engine import attendance_system

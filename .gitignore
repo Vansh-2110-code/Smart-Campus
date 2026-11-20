@@ -63,6 +63,22 @@ extracted_academic_requirements.txt
 scratch/
 scratch_*.png
 
+# Runtime-generated JSON data stores (re-created by the app on first run)
+data/embeddings/
+data/classroom_verification_logs.json
+data/presence_state.json
+data/academic/academic_store.json
+models/benchmark_results.json
+models/feature_stats.json
+
+# Streaming benchmark data (runtime output)
+campus_scans.jsonl
+
+# Node / package manager artifacts
+node_modules/
+package-lock.json
+yarn.lock
+
 # OS generated files
 .DS_Store
 Thumbs.db

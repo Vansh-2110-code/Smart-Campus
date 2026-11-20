@@ -370,3 +370,4 @@ python -m uvicorn service:app --host 127.0.0.1 --port 8000
 * **Academic Overview:** [http://127.0.0.1:8000/api/v1/academic/overview](http://127.0.0.1:8000/api/v1/academic/overview)
 * **Item Discrimination:** [http://127.0.0.1:8000/api/v1/academic/analytics/item-discrimination](http://127.0.0.1:8000/api/v1/academic/analytics/item-discrimination)
 * **Cryptographic Ledger Export:** [http://127.0.0.1:8000/api/v1/academic/ledger/export](http://127.0.0.1:8000/api/v1/academic/ledger/export)
+

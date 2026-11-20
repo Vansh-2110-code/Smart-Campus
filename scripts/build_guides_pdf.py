@@ -548,11 +548,15 @@ def build_pdf_from_markdown(md_filepath: str, output_pdf_path: str, doc_title: s
 
 
 def main():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    scripts_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(scripts_dir)
+    docs_spec_dir = os.path.join(root_dir, "docs", "specifications")
+    docs_pdf_dir = os.path.join(root_dir, "docs", "pdf")
+    os.makedirs(docs_pdf_dir, exist_ok=True)
 
     # 1. Compile Beginner Guide
-    beginner_md = os.path.join(base_dir, "PROJECT_GUIDE_BEGINNER.md")
-    beginner_pdf = os.path.join(base_dir, "PROJECT_GUIDE_BEGINNER.pdf")
+    beginner_md = os.path.join(docs_spec_dir, "PROJECT_GUIDE_BEGINNER.md")
+    beginner_pdf = os.path.join(docs_pdf_dir, "PROJECT_GUIDE_BEGINNER.pdf")
     if os.path.exists(beginner_md):
         build_pdf_from_markdown(
             md_filepath=beginner_md,
@@ -561,8 +565,8 @@ def main():
         )
 
     # 2. Compile Advanced Guide
-    advanced_md = os.path.join(base_dir, "PROJECT_GUIDE_ADVANCED.md")
-    advanced_pdf = os.path.join(base_dir, "PROJECT_GUIDE_ADVANCED.pdf")
+    advanced_md = os.path.join(docs_spec_dir, "PROJECT_GUIDE_ADVANCED.md")
+    advanced_pdf = os.path.join(docs_pdf_dir, "PROJECT_GUIDE_ADVANCED.pdf")
     if os.path.exists(advanced_md):
         build_pdf_from_markdown(
             md_filepath=advanced_md,
